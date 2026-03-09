@@ -27,6 +27,7 @@ const Appointments = () => {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const today = new Date().toISOString().split("T")[0];
+  const [selectedFilter, setSelectedFilter] = useState("Daily");
 
   const role = user?.role?.toLowerCase();
 
@@ -134,8 +135,6 @@ const Appointments = () => {
     if (page > 1) setPage(page - 1);
   };
 
-  /* ---------------- FILTER HANDLERS ---------------- */
-
   const handleReset = () => {
     setPage(1);
     setFromDate("");
@@ -155,7 +154,16 @@ const Appointments = () => {
     });
   };
 
-  /* ---------------- UI ---------------- */
+  const timeSlots = useMemo(() => {
+    const slots = [];
+
+    for (let h = 9; h <= 20; h++) {
+      slots.push(`${String(h).padStart(2, "0")}:00`);
+      slots.push(`${String(h).padStart(2, "0")}:30`);
+    }
+
+    return slots;
+  }, []);
 
   const PageLoader = () => {
     return (
@@ -170,7 +178,6 @@ const Appointments = () => {
 
   return (
     <div className="space-y-6">
-
       {loading && <PageLoader />}
 
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
@@ -199,53 +206,57 @@ const Appointments = () => {
       />
 
       {/* FILTER */}
-
-      <div className="bg-blue-100 border rounded-xl p-4 flex flex-col md:flex-row gap-4">
-        <input
-          type="date"
-          value={fromDate}
-          onChange={(e) => setFromDate(e.target.value)}
-          className="border rounded-lg px-3 py-2 text-sm"
-        />
-
-        <input
-          type="date"
-          value={toDate}
-          onChange={(e) => setToDate(e.target.value)}
-          className="border rounded-lg px-3 py-2 text-sm"
-        />
-
-        {showDoctorFilter && (
-          <select
-            value={doctorId}
-            onChange={(e) => setDoctorId(e.target.value)}
+      {activeTab === "list" && (
+        <div className="bg-blue-100 border rounded-xl p-4 flex flex-col md:flex-row gap-4">
+          <input
+            type="date"
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
             className="border rounded-lg px-3 py-2 text-sm"
+          />
+
+          <input
+            type="date"
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
+            className="border rounded-lg px-3 py-2 text-sm"
+          />
+
+          {showDoctorFilter && (
+            <select
+              value={doctorId}
+              onChange={(e) => setDoctorId(e.target.value)}
+              className="border rounded-lg px-3 py-2 text-sm"
+            >
+              <option value="">All Doctors</option>
+
+              {doctors.map((doc) => (
+                <option key={doc.id} value={doc.id}>
+                  {doc.full_name} {doc.last_name}
+                </option>
+              ))}
+            </select>
+          )}
+
+          <button
+            onClick={handleReset}
+            className="bg-gray-100 px-4 py-2 rounded-lg"
           >
-            <option value="">All Doctors</option>
-
-            {doctors.map((doc) => (
-              <option key={doc.id} value={doc.id}>
-                {doc.full_name} {doc.last_name}
-              </option>
-            ))}
-          </select>
-        )}
-
-        <button
-          onClick={handleReset}
-          className="bg-gray-100 px-4 py-2 rounded-lg"
-        >
-          Reset
-        </button>
-      </div>
+            Reset
+          </button>
+        </div>
+      )}
 
       {/* STATS */}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          title="Appointments Today"
+          title="Appointments"
           value={stats.today}
           icon={<Calendar />}
+          filters={["Daily", "Weekly", "Monthly"]}
+          selectedFilter={selectedFilter}
+          onFilterChange={setSelectedFilter}
         />
         <StatCard title="Scheduled" value={stats.scheduled} icon={<Clock />} />
         <StatCard title="Completed" value={stats.completed} icon={<User />} />
@@ -262,9 +273,9 @@ const Appointments = () => {
         <TabButton id="today" active={activeTab} setActive={setActiveTab}>
           Today's Schedule
         </TabButton>
-        {/* <TabButton id="calendar" active={activeTab} setActive={setActiveTab}>
+        <TabButton id="calendar" active={activeTab} setActive={setActiveTab}>
           Calendar View
-        </TabButton> */}
+        </TabButton>
         <TabButton id="list" active={activeTab} setActive={setActiveTab}>
           List View
         </TabButton>
@@ -311,7 +322,135 @@ const Appointments = () => {
         </div>
       )}
 
-      {/* LIST VIEW */}
+      {activeTab === "calendar" && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* CALENDAR */}
+          <div className="lg:col-span-2 bg-white border rounded-xl">
+            <div className="flex justify-between items-center p-4 border-b">
+              <h2 className="font-semibold">Calendar View</h2>
+              <span className="text-sm text-gray-500">{formatDate(today)}</span>
+            </div>
+
+            <div className="divide-y">
+              {timeSlots.map((slot) => {
+                const slotAppointments = appointments.filter((a) => {
+                  if (a.date !== today) return false;
+
+                  const [slotHour, slotMin] = slot.split(":");
+                  const [appHour, appMin] = a.time.split(":");
+
+                  const slotTime = Number(slotHour) * 60 + Number(slotMin);
+                  const appTime = Number(appHour) * 60 + Number(appMin);
+
+                  return appTime >= slotTime && appTime < slotTime + 30;
+                });
+
+                return (
+                  <div key={slot} className="flex items-start">
+                    {/* TIME */}
+                    <div className="w-24 text-xs text-gray-500 p-4">
+                      {formatTime(slot)}
+                    </div>
+
+                    {/* APPOINTMENTS */}
+                    <div className="flex-1 p-2 space-y-2">
+                      {slotAppointments.length === 0 && (
+                        <div className="h-8"></div>
+                      )}
+
+                      {slotAppointments.map((a) => (
+                        <div
+                          key={a.id}
+                          className={`rounded-lg p-3 text-sm border-l-4 ${
+                            a.status === "completed"
+                              ? "bg-gray-100 border-gray-400"
+                              : a.status === "cancelled"
+                                ? "bg-red-100 border-red-500"
+                                : "bg-green-100 border-green-500"
+                          }`}
+                        >
+                          <div className="flex justify-between">
+                            <p className="font-medium">{a.patient}</p>
+                            <span className="text-xs">
+                              {formatTime(a.time)}
+                            </span>
+                          </div>
+
+                          <p className="text-xs text-gray-600">Dr. {a.doc}</p>
+
+                          <p className="text-xs mt-1">{a.status}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* RIGHT PANEL */}
+          <div className="space-y-6">
+            {/* Appointment List */}
+            <div className="bg-white border rounded-xl p-4">
+              <h3 className="font-semibold mb-3">Appointment List</h3>
+
+              <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                {appointments
+                  .filter((a) => a.date === today)
+                  .map((a) => (
+                    <div
+                      key={a.id}
+                      className="flex justify-between border rounded-lg p-3 text-sm"
+                    >
+                      <div>
+                        <p className="font-medium">{a.patient}</p>
+                        <p className="text-xs text-gray-500">UHID</p>
+                      </div>
+
+                      <div className="text-right">
+                        <p>{formatTime(a.time)}</p>
+
+                        <span
+                          className={`text-xs px-2 py-1 rounded ${getStatusColor(
+                            a.status,
+                          )}`}
+                        >
+                          {a.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+
+            {/* Doctor Slot Summary */}
+            <div className="bg-white border rounded-xl p-4">
+              <h3 className="font-semibold mb-3">Doctor Slot Summary</h3>
+
+              <div className="space-y-3 text-sm">
+                {doctors.slice(0, 3).map((doc) => (
+                  <div
+                    key={doc.id}
+                    className="flex justify-between border-b pb-2"
+                  >
+                    <div>
+                      <p className="font-medium">{doc.full_name}</p>
+                      <p className="text-xs text-gray-500">
+                        {doc.department?.name}
+                      </p>
+                    </div>
+
+                    <div className="text-right text-xs">
+                      <p className="text-green-600">Next Free</p>
+                      <p>--</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {activeTab === "list" && (
         <div className="bg-white border rounded-xl p-6">
@@ -408,8 +547,6 @@ const Appointments = () => {
     </div>
   );
 };
-
-/* ---------------- TAB BUTTON ---------------- */
 
 const TabButton = ({ id, active, setActive, children }) => (
   <button

@@ -30,8 +30,6 @@ const DoctorDashboard = () => {
 
   const today = new Date().toISOString().split("T")[0];
 
-  /* ---------------- DATE RANGE ---------------- */
-
   const getDateRange = (filter) => {
     const now = new Date();
     let from = new Date();
@@ -54,7 +52,6 @@ const DoctorDashboard = () => {
       to = new Date(now.getFullYear(), now.getMonth() + 1, 0);
     }
 
-    // 🔹 Add one day to `to` to include full day
     to.setDate(to.getDate() + 1);
 
     return {
@@ -62,8 +59,6 @@ const DoctorDashboard = () => {
       to_date: to.toISOString().split("T")[0],
     };
   };
-
-  /* ---------------- FETCH APPOINTMENTS ---------------- */
 
   const fetchAppointments = async () => {
     try {
@@ -111,8 +106,6 @@ const DoctorDashboard = () => {
     }
   };
 
-  /* ---------------- FETCH PATIENTS ---------------- */
-
   const fetchPatients = async () => {
     try {
       const res = await axiosInstance.get("/patients/with-opd-visits", {
@@ -131,8 +124,6 @@ const DoctorDashboard = () => {
     }
   };
 
-  /* ---------------- FETCH LAB RESULTS ---------------- */
-
   const fetchLabResults = async () => {
     try {
       // const res = await axiosInstance.get("/lab/results/findAll", {
@@ -146,8 +137,6 @@ const DoctorDashboard = () => {
     }
   };
 
-  /* ---------------- EFFECTS ---------------- */
-
   useEffect(() => {
     if (!user?.id) return;
 
@@ -159,7 +148,20 @@ const DoctorDashboard = () => {
     fetchLabResults();
   }, [patientFilter]);
 
-  /* ---------------- UI ---------------- */
+  const getStatusStyle = (status) => {
+    switch (status?.toLowerCase()) {
+      case "completed":
+        return "bg-blue-100 text-blue-600";
+      case "pending":
+        return "bg-yellow-100 text-yellow-700";
+      case "ongoing":
+        return "bg-green-100 text-green-600";
+      case "cancelled":
+        return "bg-red-100 text-red-600";
+      default:
+        return "bg-gray-100 text-gray-600";
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -172,8 +174,6 @@ const DoctorDashboard = () => {
           Welcome back, manage your patients and appointments
         </p>
       </div>
-
-      {/* STATS */}
 
       <div className="grid grid-cols-4 gap-4">
         <StatCard
@@ -231,11 +231,7 @@ const DoctorDashboard = () => {
 
                     <td>
                       <span
-                        className={`px-3 py-1 rounded-full text-xs ${
-                          a.status === "completed"
-                            ? "bg-blue-100 text-blue-600"
-                            : "bg-orange-100 text-orange-600"
-                        }`}
+                        className={`px-3 py-1 rounded-full text-xs ${getStatusStyle(a.status)}`}
                       >
                         {a.status}
                       </span>
@@ -254,8 +250,6 @@ const DoctorDashboard = () => {
             </tbody>
           </table>
         </div>
-
-        {/* SYSTEM ALERTS */}
 
         <div className="bg-white border rounded-xl p-5">
           <h2 className="text-lg font-semibold mb-4">System Alerts</h2>
@@ -292,8 +286,6 @@ const DoctorDashboard = () => {
           </div>
         </div>
       </div>
-
-      {/* PATIENT QUEUE */}
 
       {/* <div className="bg-white border rounded-xl p-5">
         <h2 className="text-lg font-semibold mb-4">Patient Queue</h2>
