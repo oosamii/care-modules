@@ -61,7 +61,7 @@ const AddVitalsModal = ({ isOpen, onClose, patient, onUpdated }) => {
       const payload = {
         diagnosis: formData.diagnosis,
         status: formData.status,
-        notes: formData.notes,
+        chief_complaint: formData.notes,
         vitals: {
           bp: formData.bp,
           pulse: Number(formData.pulse),
@@ -90,7 +90,7 @@ const AddVitalsModal = ({ isOpen, onClose, patient, onUpdated }) => {
 
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold">Update Visit</h2>
+          <h2 className="text-xl font-semibold">Add Vitals</h2>
           <X
             className="cursor-pointer text-gray-500 hover:text-gray-700"
             onClick={onClose}

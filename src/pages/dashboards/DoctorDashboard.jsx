@@ -34,20 +34,17 @@ const DoctorDashboard = () => {
 
   const getDateRange = (filter) => {
     const now = new Date();
-
     let from = new Date();
     let to = new Date();
 
     if (filter === "Today") {
       from = now;
-      to = now;
+      to = new Date(now);
     }
 
     if (filter === "Week") {
       const day = now.getDay();
-      from = new Date(now);
       from.setDate(now.getDate() - day);
-
       to = new Date(from);
       to.setDate(from.getDate() + 6);
     }
@@ -56,6 +53,9 @@ const DoctorDashboard = () => {
       from = new Date(now.getFullYear(), now.getMonth(), 1);
       to = new Date(now.getFullYear(), now.getMonth() + 1, 0);
     }
+
+    // 🔹 Add one day to `to` to include full day
+    to.setDate(to.getDate() + 1);
 
     return {
       from_date: from.toISOString().split("T")[0],
@@ -141,7 +141,6 @@ const DoctorDashboard = () => {
       //     status: "pending",
       //   },
       // });
-
       // setPendingLabs(res?.data?.data?.total || 0);
     } catch {
       setPendingLabs(0);
@@ -170,7 +169,7 @@ const DoctorDashboard = () => {
           Doctor Dashboard
         </h1>
 
-        <p className="text-gray-500">
+        <p className="text-gray-500 text-xs">
           Welcome back, manage your patients and appointments
         </p>
       </div>
@@ -203,17 +202,15 @@ const DoctorDashboard = () => {
           title="Total Patients"
           value={patientCount}
           icon={<Users size={24} className="text-green-500" />}
-          filters={["Today", "Week", "Month"]}
-          selectedFilter={patientFilter}
-          onFilterChange={setPatientFilter}
+          // filters={["Today", "Week", "Month"]}
+          // selectedFilter={patientFilter}
+          // onFilterChange={setPatientFilter}
         />
       </div>
 
-      {/* TODAY APPOINTMENTS */}
-
       <div className="grid grid-cols-3 gap-6">
         <div className="col-span-2 bg-white border rounded-xl p-5">
-          <h2 className="text-lg font-semibold mb-4">Today's Appointments</h2>
+          <h2 className="text-lg font-semibold mb-4">Appointments</h2>
 
           <table className="w-full text-xs">
             <thead className="text-left text-gray-500">
