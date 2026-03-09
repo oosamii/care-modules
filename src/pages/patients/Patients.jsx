@@ -44,6 +44,7 @@ const Patients = () => {
   console.log(permissions);
 
   const fetchPatients = async (page = 1) => {
+    setLoading(true);
     try {
       setLoading(true);
 
@@ -142,8 +143,20 @@ const Patients = () => {
     }
   };
 
+    const PageLoader = () => {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/70 backdrop-blur-sm">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-sm text-gray-600">Loading appointments...</p>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="bg-gray-50 min-h-screen">
+       {loading && <PageLoader />}
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
         <div>

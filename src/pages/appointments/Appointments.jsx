@@ -13,59 +13,26 @@ import axiosInstance from "../../constants/axiosInstance";
 import toast from "react-hot-toast";
 import { useAuth } from "../../utils/AuthContext";
 
-/* ---------------- WEEK GENERATOR ---------------- */
-
-const getCurrentWeek = () => {
-  const today = new Date();
-  const day = today.getDay();
-
-  const start = new Date(today);
-  start.setDate(today.getDate() - day);
-
-  const week = [];
-
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(start);
-    d.setDate(start.getDate() + i);
-
-    week.push({
-      label: d.toLocaleDateString("en-US", { weekday: "short" }),
-      date: d.toISOString().split("T")[0],
-      day: d.getDate(),
-    });
-  }
-
-  return week;
-};
-
 const Appointments = () => {
   const { user, permissions } = useAuth();
-
+  const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("today");
   const [isModalOpen, setIsModalOpen] = useState(false);
-
   const [appointments, setAppointments] = useState([]);
   const [doctors, setDoctors] = useState([]);
-
   const [doctorId, setDoctorId] = useState("");
-
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
-
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-
   const today = new Date().toISOString().split("T")[0];
-  const weekDays = useMemo(() => getCurrentWeek(), []);
 
   const role = user?.role?.toLowerCase();
 
   const showDoctorFilter = ["front", "nurse", "billing"].some((r) =>
     role?.includes(r),
   );
-
-  /* ---------------- FETCH DOCTORS ---------------- */
 
   const fetchDoctors = async () => {
     try {
@@ -91,27 +58,22 @@ const Appointments = () => {
     }
   }, [user?.role]);
 
-  /* ---------------- FETCH APPOINTMENTS ---------------- */
-
   const fetchAppointments = async () => {
+    setLoading(true);
+
     try {
       const params = { page, limit };
-
       if (fromDate) params.from_date = fromDate;
       if (toDate) params.to_date = toDate;
-
       if (role?.includes("doctor")) {
         params.doctor_id = user.id;
       }
-
       if (doctorId && !role?.includes("doctor")) {
         params.doctor_id = doctorId;
       }
 
       const res = await axiosInstance.get("/opd/visits/findAll", { params });
-
       const response = res.data.data;
-
       const mapped = response.data.map((visit) => {
         const dateObj = new Date(visit.visit_date);
 
@@ -131,14 +93,14 @@ const Appointments = () => {
       setTotalPages(response.totalPages || 1);
     } catch {
       toast.error("Failed to fetch visits");
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchAppointments();
   }, [page, doctorId, fromDate, toDate]);
-
-  /* ---------------- STATS ---------------- */
 
   const stats = useMemo(() => {
     return {
@@ -148,8 +110,6 @@ const Appointments = () => {
       cancelled: appointments.filter((a) => a.status === "cancelled").length,
     };
   }, [appointments, today]);
-
-  /* ---------------- HELPERS ---------------- */
 
   const formatTime = (time) => {
     const [h, m] = time.split(":");
@@ -184,22 +144,34 @@ const Appointments = () => {
   };
 
   const formatDate = (dateString) => {
-  if (!dateString) return "-";
+    if (!dateString) return "-";
 
-  const date = new Date(dateString);
+    const date = new Date(dateString);
 
-  return date.toLocaleString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-};
+    return date.toLocaleString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
 
   /* ---------------- UI ---------------- */
 
+  const PageLoader = () => {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/70 backdrop-blur-sm">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-sm text-gray-600">Loading appointments...</p>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
-      {/* HEADER */}
+
+      {loading && <PageLoader />}
 
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>

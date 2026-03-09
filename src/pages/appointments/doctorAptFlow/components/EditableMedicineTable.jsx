@@ -115,7 +115,7 @@ const EditableMedicineTable = ({
 
   return (
     <div className="space-y-4">
-      <h2 className="font-semibold">Prescribe Medicine (Static Mode)</h2>
+      <h2 className="font-semibold">Prescribe Medicine</h2>
 
       <div className="overflow-x-auto border rounded-lg">
         <table className="w-full text-sm">

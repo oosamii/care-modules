@@ -19,6 +19,7 @@ const AddAppointmentModal = ({ isOpen, onClose, onSuccess }) => {
     department_id: "",
     date: "",
     time: "",
+    chief_complaint: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -27,24 +28,37 @@ const AddAppointmentModal = ({ isOpen, onClose, onSuccess }) => {
 
   useEffect(() => {
     if (isOpen) {
-      fetchDoctors();
       fetchServices();
       fetchDepartments();
     }
   }, [isOpen]);
 
-  const fetchDoctors = async () => {
-    try {
-      const res = await axiosInstance.get("/hospital/users/findAll", {
-        params: {
-          page: 1,
-          limit: 10,
-          role_id: "10c1a68c-e644-4f9c-bbe4-05d0f83a79c0",
-        },
-      });
+  useEffect(() => {
+    if (isOpen && formData?.department_id) {
+      fetchDoctors();
+    }
+  }, [formData?.department_id, isOpen]);
 
-      setDoctors(res?.data?.data?.data || []);
-    } catch {
+  const fetchDoctors = async () => {
+    if (!formData?.department_id) {
+      setDoctors([]);
+      return;
+    }
+
+    try {
+      const roleId = "10c1a68c-e644-4f9c-bbe4-05d0f83a79c0";
+      const deptId = formData.department_id;
+
+      const res = await axiosInstance.get(
+        `/hospital/users/by-role/${roleId}/by-department/${deptId}`,
+      );
+
+      const doctorList = res?.data?.data?.data || [];
+
+      setDoctors(Array.isArray(doctorList) ? doctorList : []);
+    } catch (error) {
+      console.log(error);
+      setDoctors([]);
       toast.error("Failed to fetch doctors");
     }
   };
@@ -71,15 +85,13 @@ const AddAppointmentModal = ({ isOpen, onClose, onSuccess }) => {
       });
 
       const activeDepartments =
-        (res?.data?.data || []).filter((d) => d.is_active) || [];
+        (res?.data?.data?.data || []).filter((d) => d.is_active) || [];
 
       setDepartments(activeDepartments);
     } catch {
       toast.error("Failed to fetch departments");
     }
   };
-
-  /* ---------------- PATIENT SEARCH (AUTO) ---------------- */
 
   const searchPatient = async (phone) => {
     try {
@@ -117,14 +129,13 @@ const AddAppointmentModal = ({ isOpen, onClose, onSuccess }) => {
     setShowDropdown(false);
   };
 
-  /* ---------------- FORM HANDLING ---------------- */
-
   const handleChange = (e) => {
     const { name, value } = e.target;
 
     setFormData((prev) => ({
       ...prev,
       [name]: value,
+      ...(name === "department_id" ? { doctor_id: "" } : {}),
     }));
 
     setErrors((prev) => ({
@@ -136,36 +147,29 @@ const AddAppointmentModal = ({ isOpen, onClose, onSuccess }) => {
   const validate = () => {
     const newErrors = {};
 
-    if (!formData.patient_id)
-      newErrors.patient_id = "Patient is required";
+    if (!formData.patient_id) newErrors.patient_id = "Patient is required";
 
-    if (!formData.doctor_id)
-      newErrors.doctor_id = "Doctor is required";
+    if (!formData.doctor_id) newErrors.doctor_id = "Doctor is required";
 
-    if (!formData.service_code)
-      newErrors.service_code = "Service is required";
+    if (!formData.service_code) newErrors.service_code = "Service is required";
 
     if (!formData.department_id)
       newErrors.department_id = "Department is required";
 
-    if (!formData.date)
-      newErrors.date = "Date is required";
+    if (!formData.date) newErrors.date = "Date is required";
 
-    if (!formData.time)
-      newErrors.time = "Time is required";
+    if (!formData.time) newErrors.time = "Time is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
-  /* ---------------- SUBMIT ---------------- */
 
   const handleSubmit = async () => {
     if (!validate()) return;
 
     try {
       const visit_date = new Date(
-        `${formData.date}T${formData.time}`
+        `${formData.date}T${formData.time}`,
       ).toISOString();
 
       const payload = {
@@ -174,6 +178,7 @@ const AddAppointmentModal = ({ isOpen, onClose, onSuccess }) => {
         service_code: formData.service_code,
         department_id: formData.department_id,
         visit_date,
+        chief_complaint: formData.chief_complaint,
         status: "pending",
       };
 
@@ -188,6 +193,7 @@ const AddAppointmentModal = ({ isOpen, onClose, onSuccess }) => {
         department_id: "",
         date: "",
         time: "",
+        chief_complaint: "",
       });
 
       setPatientPhone("");
@@ -207,15 +213,13 @@ const AddAppointmentModal = ({ isOpen, onClose, onSuccess }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
       <div className="bg-white w-full max-w-lg rounded-xl shadow-lg flex flex-col max-h-[85vh]">
-
         {/* Header */}
         <div className="flex justify-between items-center px-6 py-4 border-b">
           <h2 className="text-lg font-semibold">New Appointment</h2>
           <X onClick={onClose} className="cursor-pointer" />
         </div>
 
-        <div className="overflow-y-auto px-6 py-4 space-y-4">
-
+        <div className="overflow-y-auto px-6 py-4 space-y-4 text-xs">
           {/* Patient Search */}
           <div className="relative">
             <label className="text-sm">Search Patient (Phone)</label>
@@ -237,28 +241,44 @@ const AddAppointmentModal = ({ isOpen, onClose, onSuccess }) => {
                     <p className="font-medium">
                       {patient.first_name} {patient.last_name}
                     </p>
-                    <p className="text-xs text-gray-500">
-                      {patient.phone}
-                    </p>
+                    <p className="text-xs text-gray-500">{patient.phone}</p>
                   </div>
                 ))}
               </div>
             )}
           </div>
 
+          {/* Department */}
+          <select
+            name="department_id"
+            value={formData.department_id}
+            onChange={handleChange}
+            className="w-full border rounded-lg p-2"
+          >
+            <option value="">Select Department</option>
+            {departments.map((dept) => (
+              <option key={dept.id} value={dept.id}>
+                {dept.name}
+              </option>
+            ))}
+          </select>
+
           {/* Doctor */}
           <select
             name="doctor_id"
             value={formData.doctor_id}
             onChange={handleChange}
+            disabled={!formData.department_id}
             className="w-full border rounded-lg p-2"
           >
             <option value="">Select Doctor</option>
-            {doctors.map((doc) => (
-              <option key={doc.id} value={doc.id}>
-                {doc.full_name}
-              </option>
-            ))}
+            {Array.isArray(doctors) &&
+              doctors.map((doc) => (
+                <option key={doc.id} value={doc.id}>
+                  {doc.full_name ||
+                    `${doc.first_name || ""} ${doc.last_name || ""}`}
+                </option>
+              ))}
           </select>
 
           {/* Service */}
@@ -272,21 +292,6 @@ const AddAppointmentModal = ({ isOpen, onClose, onSuccess }) => {
             {services.map((s) => (
               <option key={s.code} value={s.code}>
                 {s.name}
-              </option>
-            ))}
-          </select>
-
-          {/* Department */}
-          <select
-            name="department_id"
-            value={formData.department_id}
-            onChange={handleChange}
-            className="w-full border rounded-lg p-2"
-          >
-            <option value="">Select Department</option>
-            {departments.map((dept) => (
-              <option key={dept.id} value={dept.id}>
-                {dept.name}
               </option>
             ))}
           </select>
@@ -308,6 +313,23 @@ const AddAppointmentModal = ({ isOpen, onClose, onSuccess }) => {
             onChange={handleChange}
             className="w-full border rounded-lg p-2"
           />
+
+          {/* Chief Complaint */}
+          <div>
+            <label className="text-sm">Reason for Visit</label>
+            <textarea
+              name="chief_complaint"
+              value={formData.chief_complaint}
+              onChange={handleChange}
+              placeholder="Enter the reason..."
+              className="w-full border rounded-lg p-2 mt-1"
+            />
+            {errors.chief_complaint && (
+              <p className="text-red-500 text-xs mt-1">
+                {errors.chief_complaint}
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Footer */}
