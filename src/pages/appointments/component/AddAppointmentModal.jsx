@@ -7,7 +7,7 @@ const AddAppointmentModal = ({ isOpen, onClose, onSuccess }) => {
   const [doctors, setDoctors] = useState([]);
   const [services, setServices] = useState([]);
   const [departments, setDepartments] = useState([]);
-
+  const [availableSlots, setAvailableSlots] = useState([]);
   const [patientPhone, setPatientPhone] = useState("");
   const [patientResults, setPatientResults] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -24,7 +24,29 @@ const AddAppointmentModal = ({ isOpen, onClose, onSuccess }) => {
 
   const [errors, setErrors] = useState({});
 
-  /* ---------------- FETCH DATA ---------------- */
+  // Helper to reset all fields
+  const resetForm = () => {
+    setFormData({
+      patient_id: "",
+      doctor_id: "",
+      service_code: "",
+      department_id: "",
+      date: "",
+      time: "",
+      chief_complaint: "",
+    });
+    setPatientPhone("");
+    setPatientResults([]);
+    setAvailableSlots([]);
+    setErrors({});
+    setShowDropdown(false);
+  };
+
+  // Wrap original onClose
+  const handleClose = () => {
+    resetForm();
+    onClose?.();
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -85,8 +107,7 @@ const AddAppointmentModal = ({ isOpen, onClose, onSuccess }) => {
       });
 
       const activeDepartments =
-        (res?.data?.data?.data || []).filter((d) => d.is_active) || [];
-
+        (res?.data?.data || []).filter((d) => d.is_active) || [];
       setDepartments(activeDepartments);
     } catch {
       toast.error("Failed to fetch departments");
@@ -164,51 +185,61 @@ const AddAppointmentModal = ({ isOpen, onClose, onSuccess }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async () => {
-    if (!validate()) return;
+ const handleSubmit = async () => {
+  if (!validate()) return;
 
-    try {
-      const visit_date = new Date(
-        `${formData.date}T${formData.time}`,
-      ).toISOString();
+  try {
+    const visit_date = formData.time; 
 
-      const payload = {
-        patient_id: formData.patient_id,
-        doctor_id: formData.doctor_id,
-        service_code: formData.service_code,
-        department_id: formData.department_id,
-        visit_date,
-        chief_complaint: formData.chief_complaint,
-        status: "pending",
-      };
+    const payload = {
+      patient_id: formData.patient_id,
+      doctor_id: formData.doctor_id,
+      service_code: formData.service_code,
+      department_id: formData.department_id,
+      visit_date, 
+      chief_complaint: formData.chief_complaint,
+      status: "pending",
+    };
 
-      await axiosInstance.post("/opd/visits/create", payload);
+    await axiosInstance.post("/opd/visits/create", payload);
 
-      toast.success("Appointment created");
+    toast.success("Appointment created");
+    resetForm();
+    onSuccess?.();
+    onClose?.();
+  } catch (error) {
+    console.log(error);
+    toast.error("Failed to create appointment");
+  }
+};
 
-      setFormData({
-        patient_id: "",
-        doctor_id: "",
-        service_code: "",
-        department_id: "",
-        date: "",
-        time: "",
-        chief_complaint: "",
-      });
+  useEffect(() => {
+    const fetchSlots = async () => {
+      if (!formData.doctor_id || !formData.date) {
+        setAvailableSlots([]);
+        return;
+      }
 
-      setPatientPhone("");
-      setPatientResults([]);
+      try {
+        const res = await axiosInstance.get("/scheduler/availability", {
+          params: {
+            user_id: formData.doctor_id,
+            date: formData.date,
+          },
+        });
 
-      onSuccess?.();
-      onClose();
-    } catch {
-      toast.error("Failed to create appointment");
-    }
-  };
+        setAvailableSlots(res?.data?.data?.slots || []);
+      } catch (error) {
+        console.log(error);
+        setAvailableSlots([]);
+        toast.error("Failed to fetch available slots");
+      }
+    };
+
+    fetchSlots();
+  }, [formData.doctor_id, formData.date]);
 
   if (!isOpen) return null;
-
-  /* ---------------- UI ---------------- */
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
@@ -216,7 +247,7 @@ const AddAppointmentModal = ({ isOpen, onClose, onSuccess }) => {
         {/* Header */}
         <div className="flex justify-between items-center px-6 py-4 border-b">
           <h2 className="text-lg font-semibold">New Appointment</h2>
-          <X onClick={onClose} className="cursor-pointer" />
+          <X onClick={handleClose} className="cursor-pointer" />
         </div>
 
         <div className="overflow-y-auto px-6 py-4 space-y-4 text-xs">
@@ -306,13 +337,36 @@ const AddAppointmentModal = ({ isOpen, onClose, onSuccess }) => {
           />
 
           {/* Time */}
-          <input
-            type="time"
+          <select
             name="time"
             value={formData.time}
             onChange={handleChange}
+            disabled={availableSlots.length === 0}
             className="w-full border rounded-lg p-2"
-          />
+          >
+            <option value="">Select Time</option>
+            {availableSlots.map((slot, idx) => {
+              const startLocal = new Date(slot.start).toLocaleTimeString(
+                "en-IN",
+                {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: false,
+                },
+              );
+              const endLocal = new Date(slot.end).toLocaleTimeString("en-IN", {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+              });
+
+              return (
+                <option key={idx} value={slot.start}>
+                  {startLocal} - {endLocal}
+                </option>
+              );
+            })}
+          </select>
 
           {/* Chief Complaint */}
           <div>
@@ -334,7 +388,7 @@ const AddAppointmentModal = ({ isOpen, onClose, onSuccess }) => {
 
         {/* Footer */}
         <div className="flex justify-end gap-3 px-6 py-4 border-t">
-          <button onClick={onClose} className="border px-4 py-2 rounded-lg">
+          <button onClick={handleClose} className="border px-4 py-2 rounded-lg">
             Cancel
           </button>
 
