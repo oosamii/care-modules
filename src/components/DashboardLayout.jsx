@@ -45,27 +45,27 @@ const DashboardLayout = () => {
               </button>
 
               {/* Mobile Search Icon */}
-              <button className="md:hidden">
+              {/* <button className="md:hidden">
                 <Search size={18} />
-              </button>
+              </button> */}
             </div>
 
             {/* Right Side */}
             <div className="flex items-center gap-3">
               {/* Search Bar (Desktop Only) */}
-              <div className="hidden md:flex items-center gap-2 border border-custBorder px-3 py-1.5 rounded-full w-[260px] lg:w-[320px]">
+              {/* <div className="hidden md:flex items-center gap-2 border border-custBorder px-3 py-1.5 rounded-full w-[260px] lg:w-[320px]">
                 <Search size={16} className="text-gray-400" />
                 <input
                   className="bg-transparent text-sm outline-none w-full"
                   placeholder="Search..."
                 />
-              </div>
+              </div> */}
 
               {/* Notifications */}
-              <button className="relative">
+              {/* <button className="relative">
                 <Bell size={18} />
                 <span className="absolute -top-1 -right-1 w-2 h-2 bg-custred rounded-full" />
-              </button>
+              </button> */}
 
               {/* Avatar */}
               {/* Profile Dropdown */}

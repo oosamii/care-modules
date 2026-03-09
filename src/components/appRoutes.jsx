@@ -36,7 +36,7 @@ export const appRoutes = [
     permission: { module: "opd", action: "view" },
   },
   {
-    path: "/aptDetails/:pId",
+    path: "/aptDetails/:aptId",
     element: <DocAppointmentDetails />,
     permission: { module: "opd", action: "view" },
   },

@@ -3,7 +3,7 @@ import { X } from "lucide-react";
 import axiosInstance from "../../../constants/axiosInstance";
 import toast from "react-hot-toast";
 
-const AddVitalsModal = ({ isOpen, onClose, patient, onUpdated }) => {
+const AddVitalsModal = ({ isOpen, onClose, apt, onUpdated }) => {
   const [formData, setFormData] = useState({
     diagnosis: "",
     status: "ongoing",
@@ -13,7 +13,7 @@ const AddVitalsModal = ({ isOpen, onClose, patient, onUpdated }) => {
     temperature_c: "",
     spo2: "",
   });
-
+  
   const [errors, setErrors] = useState({});
 
   if (!isOpen) return null;
@@ -71,7 +71,7 @@ const AddVitalsModal = ({ isOpen, onClose, patient, onUpdated }) => {
       };
 
       await axiosInstance.put(
-        `/opd/visits/update/${patient.id}`,
+        `/opd/visits/update/${apt.id}`,
         payload
       );
 

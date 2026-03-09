@@ -102,7 +102,6 @@ const DoctorDashboard = () => {
           status: visit.status,
         };
       });
-      console.log(mapped);
       setAppointments(mapped);
       setAppointmentCount(visits.length);
 

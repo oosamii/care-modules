@@ -35,8 +35,8 @@ const NurseDashboard = () => {
 
   const today = new Date().toISOString().split("T")[0];
 
-  const handleAddVitals = (patient) => {
-    setSelectedPatient(patient);
+  const handleAddVitals = (apt) => {
+    setSelectedPatient(apt);
     setShowAddVitalsModal(true);
   };
 
@@ -301,7 +301,7 @@ const NurseDashboard = () => {
         <AddVitalsModal
           isOpen={showAddVitalsModal}
           onClose={() => setShowAddVitalsModal(false)}
-          patient={selectedPatient}
+          apt={selectedPatient}
           onUpdated={fetchAppointments}
         />
       )}

@@ -1,14 +1,13 @@
 import React, { useState } from "react";
 import toast from "react-hot-toast";
-// import axiosInstance from "../../../../utils/axiosInstance"; // ❌ COMMENTED
+import axiosInstance from "../../../../constants/axiosInstance";
 
 const PrescribeTests = ({
   id,
-  fetchPData,
   isToday,
-  doctorId,
   fetchPrescriptionById,
   prescribedTests,
+  fetchAppointment,
 }) => {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
@@ -32,7 +31,7 @@ const PrescribeTests = ({
 
     try {
       const res = await fetch(
-        `https://clinicaltables.nlm.nih.gov/api/loinc_items/v3/search?terms=${value}&df=text,LOINC_NUM`
+        `https://clinicaltables.nlm.nih.gov/api/loinc_items/v3/search?terms=${value}&df=text,LOINC_NUM`,
       );
 
       const data = await res.json();
@@ -40,25 +39,27 @@ const PrescribeTests = ({
       setSuggestions(mockTests);
     } catch (err) {
       console.error("Error fetching LOINC data:", err);
-      setSuggestions(mockTests); 
+      setSuggestions(mockTests);
     } finally {
       setLoading(false);
     }
   };
 
-
   const handleAddTest = () => {
     if (selectedTest) {
-      setTests((prev) => [...prev, selectedTest]);
+      setTests((prev) => {
+        const exists = prev.some((t) => t.loinc === selectedTest.loinc);
+        if (exists) {
+          toast.error("Test already added");
+          return prev;
+        }
+        return [...prev, selectedTest];
+      });
       setSelectedTest(null);
       setQuery("");
       setSuggestions([]);
     }
   };
-
-  // ===============================
-  // 🔹 SAVE (COMMENTED BACKEND)
-  // ===============================
 
   const handleSave = async () => {
     if (tests.length === 0) {
@@ -66,49 +67,65 @@ const PrescribeTests = ({
       return;
     }
 
-    // const formattedTests = tests.map((t) => ({
-    //   name: `${t.text} (${t.loinc})`,
-    // }));
+    // Existing tests from backend
+    const existing =
+      prescribedTests?.map((t) => ({
+        name: t.name,
+        code: t.code,
+      })) || [];
 
-    // const reqBody = {
-    //   appointment: id,
-    //   patient: fetchPData.id,
-    //   doctor: doctorId,
-    //   tests: formattedTests,
-    // };
+    // Newly added tests
+    const newTests = tests.map((t) => ({
+      name: t.text,
+      code: t.loinc,
+    }));
 
-    // try {
-    //   const { data } = await axiosInstance.post(
-    //     `/prescription/addTest`,
-    //     reqBody
-    //   );
-    //   if (data?.success) {
-    //     toast.success(data?.message);
-    //     fetchPrescriptionById();
-    //   }
-    // } catch (error) {
-    //   toast.error("Failed to save prescription");
-    // }
+    // Merge + remove duplicates
+    const merged = [...existing, ...newTests].filter(
+      (test, index, self) =>
+        index === self.findIndex((t) => t.code === test.code),
+    );
 
-    // 🔹 STATIC MODE
-    toast.success("Test saved locally (Static Mode)");
+    try {
+      const { data } = await axiosInstance.put(`/opd/visits/update/${id}`, {
+        medical_tests: merged,
+      });
+
+      if (data.success) {
+        toast.success("Tests saved successfully");
+
+        setTests([]);
+        setQuery("");
+        setSelectedTest(null);
+
+        fetchPrescriptionById?.();
+        fetchAppointment();
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to save tests");
+    }
   };
 
-  // ===============================
-  // 🔹 REMOVE (COMMENTED BACKEND)
-  // ===============================
+  const handleRemovePrescribed = async (code) => {
+    try {
+      const { data } = await axiosInstance.patch(
+        `/opd/visits/remove-test/${id}`,
+        {
+          test_code: code,
+        },
+      );
 
-  const handleRemovePrescribed = async () => {
-    // Backend delete commented
+      if (data.success) {
+        toast.success("Test removed");
 
-    // try {
-    //   await axiosInstance.delete(`/prescription/deleteTest`, { data: {} });
-    //   fetchPrescriptionById();
-    // } catch (err) {
-    //   toast.error("Failed to remove test");
-    // }
-
-    toast.success("Remove disabled (Static Mode)");
+        fetchPrescriptionById?.();
+        fetchAppointment();
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to remove test");
+    }
   };
 
   const handleRemoveLocal = (index) => {
@@ -117,26 +134,26 @@ const PrescribeTests = ({
 
   return (
     <div className="space-y-10">
-      <div>
-        <h2 className="font-semibold text-primary">
-          Prescribed Tests
-        </h2>
+      {prescribedTests?.length > 0 && (
+        <div>
+          <h2 className="font-semibold text-primary">Prescribed Tests</h2>
 
-        {[
-          { _id: "1", name: "Complete Blood Count" },
-          { _id: "2", name: "Liver Function Test" },
-        ].map((test) => (
-          <li key={test._id} className="flex gap-4 items-center text-sm">
-            <span>{test.name}</span>
-            <button
-              onClick={handleRemovePrescribed}
-              className="text-red-500 text-xs"
-            >
-              X
-            </button>
-          </li>
-        ))}
-      </div>
+          {prescribedTests?.map((test, index) => (
+            <li key={index} className="flex gap-4 items-center text-sm">
+              <span>{test.name}</span>
+
+              {isToday && (
+                <button
+                  onClick={() => handleRemovePrescribed(test.code)}
+                  className="text-red-500 text-xs hover:text-red-700"
+                >
+                  X
+                </button>
+              )}
+            </li>
+          ))}
+        </div>
+      )}
 
       {/* Only show for today */}
       {isToday && (
@@ -154,9 +171,7 @@ const PrescribeTests = ({
             className="border rounded-md px-2 py-2 w-full text-xs"
           />
 
-          {loading && (
-            <p className="text-xs text-gray-400">Loading...</p>
-          )}
+          {loading && <p className="text-xs text-gray-400">Loading...</p>}
 
           {/* Suggestions */}
           {suggestions.length > 0 && (
@@ -180,7 +195,7 @@ const PrescribeTests = ({
           <button
             onClick={handleAddTest}
             disabled={!selectedTest}
-            className="bg-primary text-white px-3 py-1 rounded-md disabled:opacity-50"
+            className="bg-blue-500 text-white px-3 py-1 rounded-md disabled:opacity-50"
           >
             Add Test
           </button>

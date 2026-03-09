@@ -23,9 +23,9 @@ const Sidebar = () => {
         {!collapsed && (
           <div className="flex items-center gap-3">
             <div className="w-7 h-7 rounded-md bg-blue-600 text-white flex items-center justify-center font-bold text-sm">
-              H
+              O
             </div>
-            <span className="text-lg font-semibold">HealthERP</span>
+            <span className="text-lg font-semibold">Orbit Care</span>
           </div>
         )}
 
