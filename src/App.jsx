@@ -4,11 +4,11 @@ import { Route, Routes } from "react-router-dom";
 import Login from "./pages/onboarding/Login";
 import ProtectedRoute from "./utils/ProtectedRoute";
 import DashboardLayout from "./components/DashboardLayout";
-import { appRoutes } from "./components/AppRoutes";
 import PermissionRoute from "./components/PermissionRoute";
 import ForgotPassword from "./pages/onboarding/ForgotPassword";
 import ResetPassword from "./pages/onboarding/ResetPassword";
 import ResetComplete from "./pages/onboarding/ResetComplete";
+import { AppRoutes } from "./components/appRoutes";
 
 function App() {
   return (
@@ -29,7 +29,7 @@ function App() {
             </ProtectedRoute>
           }
         >
-          {appRoutes.map(({ path, element, permission }) => (
+          {AppRoutes.map(({ path, element, permission }) => (
             <Route
               key={path}
               path={path}

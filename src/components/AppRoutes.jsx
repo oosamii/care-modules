@@ -15,7 +15,7 @@ import DocAppointmentDetails from "../pages/appointments/doctorAptFlow/DocAppoin
 import OpdPatients from "../pages/patients/OpdPatients";
 import TokenQueue from "../pages/appointments/TokenQueue";
 
-export const appRoutes = [
+export const AppRoutes = [
   {
     path: "/dashboard",
     element: <DashboardRouter />,

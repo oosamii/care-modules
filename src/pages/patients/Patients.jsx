@@ -212,28 +212,32 @@ const Patients = () => {
       />
 
       {/* Stats Cards */}
+      {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard
           title="Total Patients"
-          value={statsData[filter]}
+          value={stats.total} // use API data
           icon={<Activity className="text-blue-500" />}
-          filters={["today", "week", "month", "quarter"]}
-          selectedFilter={filter}
-          onFilterChange={setFilter}
+          filters={["today", "week", "month", "quarter"]} // lowercase
+          selectedFilter={filter.toLowerCase()} // backend-compatible
+          onFilterChange={(val) => setFilter(val)} // update state
         />
+
         <StatCard
           title="Active"
-          value="4"
+          value={stats.active}
           icon={<Heart className="text-green-500" />}
         />
+
         <StatCard
           title="Critical"
-          value="1"
+          value={stats.critical}
           icon={<Thermometer className="text-red-500" />}
         />
+
         <StatCard
           title="New This Month"
-          value="12"
+          value={stats.new_this_month}
           icon={<Plus className="text-blue-500" />}
         />
       </div>
