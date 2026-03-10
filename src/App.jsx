@@ -8,7 +8,7 @@ import PermissionRoute from "./components/PermissionRoute";
 import ForgotPassword from "./pages/onboarding/ForgotPassword";
 import ResetPassword from "./pages/onboarding/ResetPassword";
 import ResetComplete from "./pages/onboarding/ResetComplete";
-import { AppRoutes } from "./components/appRoutes";
+import AllRoutes from "./components/AllRoutes";
 
 function App() {
   return (
@@ -29,7 +29,7 @@ function App() {
             </ProtectedRoute>
           }
         >
-          {AppRoutes.map(({ path, element, permission }) => (
+          {AllRoutes.map(({ path, element, permission }) => (
             <Route
               key={path}
               path={path}
