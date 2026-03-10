@@ -2,8 +2,6 @@ import React, { useEffect, useState } from "react";
 import {
   CreditCard,
   Clock,
-  ChevronDown,
-  ChevronUp,
   Search,
   Download,
   RotateCcw,
@@ -57,26 +55,10 @@ const Billing = () => {
     0,
   );
 
-  const pendingBills = bills.filter(
-    (bill) => bill.status === "pending",
-  ).length;
+  const pendingBills = bills.filter((bill) => bill.status === "pending").length;
 
   const toggleRow = (id) => {
     setExpandedRow(expandedRow === id ? null : id);
-  };
-
-  const toggleSelect = (id) => {
-    setSelectedBills((prev) =>
-      prev.includes(id) ? prev.filter((b) => b !== id) : [...prev, id],
-    );
-  };
-
-  const toggleSelectAll = () => {
-    if (selectedBills.length === bills.length) {
-      setSelectedBills([]);
-    } else {
-      setSelectedBills(bills.map((bill) => bill.id));
-    }
   };
 
   const downloadBill = async (bill) => {
@@ -275,7 +257,10 @@ const Billing = () => {
                       {new Date(bill.issued_at).toLocaleDateString()}
                     </td>
 
-                    <td className="p-4 text-center" onClick={(e) => e.stopPropagation()}>
+                    <td
+                      className="p-4 text-center"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       {bill.invoice_number ? (
                         <button
                           onClick={() => downloadBill(bill)}
@@ -283,7 +268,9 @@ const Billing = () => {
                         >
                           <Download size={16} />
                         </button>
-                      ): " - "}
+                      ) : (
+                        " - "
+                      )}
                     </td>
                   </tr>
 

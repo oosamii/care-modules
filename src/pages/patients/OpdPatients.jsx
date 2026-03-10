@@ -25,7 +25,6 @@ const statsData = {
 };
 
 const OpdPatients = () => {
-  const [filter, setFilter] = useState("Monthly");
   const [showAddPatientModal, setShowAddPatientModal] = useState(false);
   const [showAddVitalsModal, setShowAddVitalModal] = useState(false);
   const [patients, setPatients] = useState([]);
@@ -40,6 +39,13 @@ const OpdPatients = () => {
   const [showBillsModal, setShowBillsModal] = useState(false);
   const [bills, setBills] = useState([]);
   const [billsLoading, setBillsLoading] = useState(false);
+  const [filter, setFilter] = useState("Today");
+  const [stats, setStats] = useState({
+    total: 0,
+    active: 0,
+    critical: 0,
+    new_this_month: 0,
+  });
 
   console.log(permissions);
 
@@ -141,6 +147,30 @@ const OpdPatients = () => {
       setBillsLoading(false);
     }
   };
+
+  const fetchStatsData = async (period = "Today") => {
+    try {
+      const { data } = await axiosInstance.get(
+        `/patients/stats?period=${period.toLowerCase()}`,
+      );
+
+      if (data.success) {
+        setStats({
+          total: data.data.total || 0,
+          active: data.data.active || 0,
+          critical: data.data.critical || 0,
+          new_this_month: data.data.new_this_month || 0,
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to load stats");
+    }
+  };
+
+  useEffect(() => {
+    fetchStatsData(filter);
+  }, [filter]);
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -406,4 +436,4 @@ const OpdPatients = () => {
   );
 };
 
-export default OpdPatients
+export default OpdPatients;
