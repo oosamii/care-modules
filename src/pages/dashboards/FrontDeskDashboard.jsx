@@ -15,13 +15,15 @@ import axiosInstance from "../../constants/axiosInstance";
 const FrontDeskDashboard = () => {
   const [appointmentFilter, setAppointmentFilter] = useState("Today");
   const [appointments, setAppointments] = useState([]);
-
+  const [statsData, setStatsData] = useState({
+    scheduled: 0,
+    completed: 0,
+    cancelled: 0,
+  });
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
-
-  /* ---------------- TODAY RANGE ---------------- */
 
   const getTodayRange = () => {
     const now = new Date();
@@ -37,8 +39,6 @@ const FrontDeskDashboard = () => {
       to: end.toISOString(),
     };
   };
-
-  /* ---------------- FETCH APPOINTMENTS ---------------- */
 
   const fetchTodayAppointments = async () => {
     try {
@@ -83,20 +83,43 @@ const FrontDeskDashboard = () => {
     }
   };
 
+  const fetchStatsData = async (period = "today") => {
+    try {
+      const { data } = await axiosInstance.get("/opd/visits/stats", {
+        params: { period },
+      });
+
+      if (data.success) {
+        setStatsData({
+          scheduled: data.data.counts.scheduled,
+          completed: data.data.counts.completed,
+          cancelled: data.data.counts.cancelled,
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+    }
+  };
+
   useEffect(() => {
     fetchTodayAppointments();
   }, [page]);
 
+  useEffect(() => {
+    fetchStatsData(appointmentFilter);
+  }, [appointmentFilter]);
+
   /* ---------------- STATS ---------------- */
 
-  const stats = useMemo(() => {
-    return {
+  const stats = useMemo(
+    () => ({
       today: total,
-      scheduled: appointments.filter((a) => a.status === "open").length,
-      completed: appointments.filter((a) => a.status === "completed").length,
-      cancelled: appointments.filter((a) => a.status === "cancelled").length,
-    };
-  }, [appointments, total]);
+      scheduled: statsData.scheduled,
+      completed: statsData.completed,
+      cancelled: statsData.cancelled,
+    }),
+    [statsData, total],
+  );
 
   /* ---------------- STATUS COLOR ---------------- */
 
@@ -120,15 +143,18 @@ const FrontDeskDashboard = () => {
         </p>
       </div>
 
-      {/* STATS */}
       <div className="grid grid-cols-4 gap-4">
         <StatCard
           title="Appointments"
-          value={stats.today}
+          value={
+            statsData.scheduled + statsData.completed + statsData.cancelled
+          }
           icon={<Calendar size={24} className="text-blue-500" />}
           filters={["Today", "Week", "Month"]}
           selectedFilter={appointmentFilter}
-          onFilterChange={setAppointmentFilter}
+          onFilterChange={(period) =>
+            setAppointmentFilter(period.toLowerCase())
+          }
         />
 
         <StatCard
@@ -153,9 +179,7 @@ const FrontDeskDashboard = () => {
       {/* TODAY APPOINTMENTS TABLE */}
       <div className="grid grid-cols-3 gap-6">
         <div className="col-span-2 bg-white border rounded-xl p-5">
-          <h2 className="text-lg font-semibold mb-4">
-            Today's Appointments
-          </h2>
+          <h2 className="text-lg font-semibold mb-4">Today's Appointments</h2>
 
           <table className="w-full text-sm">
             <thead className="text-left text-gray-500">
@@ -175,7 +199,7 @@ const FrontDeskDashboard = () => {
                     <td>
                       <span
                         className={`px-3 py-1 rounded-full text-xs ${getStatusColor(
-                          a.status
+                          a.status,
                         )}`}
                       >
                         {a.status}
@@ -185,10 +209,7 @@ const FrontDeskDashboard = () => {
                 ))
               ) : (
                 <tr>
-                  <td
-                    colSpan="3"
-                    className="py-4 text-center text-gray-400"
-                  >
+                  <td colSpan="3" className="py-4 text-center text-gray-400">
                     No appointments today
                   </td>
                 </tr>
@@ -222,9 +243,7 @@ const FrontDeskDashboard = () => {
 
         {/* ALERTS */}
         <div className="bg-white border rounded-xl p-5">
-          <h2 className="text-lg font-semibold mb-4">
-            System Alerts
-          </h2>
+          <h2 className="text-lg font-semibold mb-4">System Alerts</h2>
 
           <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
             <div className="flex gap-2 items-start">

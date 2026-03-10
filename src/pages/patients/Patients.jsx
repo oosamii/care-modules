@@ -25,7 +25,7 @@ const statsData = {
 };
 
 const Patients = () => {
-  const [filter, setFilter] = useState("Monthly");
+  const [filter, setFilter] = useState("Today");
   const [showAddPatientModal, setShowAddPatientModal] = useState(false);
   const [showAddVitalsModal, setShowAddVitalModal] = useState(false);
   const [patients, setPatients] = useState([]);
@@ -40,8 +40,12 @@ const Patients = () => {
   const [showBillsModal, setShowBillsModal] = useState(false);
   const [bills, setBills] = useState([]);
   const [billsLoading, setBillsLoading] = useState(false);
-
-  console.log(permissions);
+  const [stats, setStats] = useState({
+    total: 0,
+    active: 0,
+    critical: 0,
+    new_this_month: 0,
+  });
 
   const fetchPatients = async (page = 1) => {
     setLoading(true);
@@ -143,7 +147,31 @@ const Patients = () => {
     }
   };
 
-    const PageLoader = () => {
+  const fetchStatsData = async (period = "Today") => {
+    try {
+      const { data } = await axiosInstance.get(
+        `/patients/stats?period=${period.toLowerCase()}`,
+      );
+
+      if (data.success) {
+        setStats({
+          total: data.data.total || 0,
+          active: data.data.active || 0,
+          critical: data.data.critical || 0,
+          new_this_month: data.data.new_this_month || 0,
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to load stats");
+    }
+  };
+
+  useEffect(() => {
+    fetchStatsData(filter);
+  }, [filter]);
+
+  const PageLoader = () => {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/70 backdrop-blur-sm">
         <div className="flex flex-col items-center gap-3">
@@ -156,7 +184,7 @@ const Patients = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen">
-       {loading && <PageLoader />}
+      {loading && <PageLoader />}
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
         <div>
@@ -189,7 +217,7 @@ const Patients = () => {
           title="Total Patients"
           value={statsData[filter]}
           icon={<Activity className="text-blue-500" />}
-          filters={["Daily", "Weekly", "Monthly", "Quarterly"]}
+          filters={["today", "week", "month", "quarter"]}
           selectedFilter={filter}
           onFilterChange={setFilter}
         />

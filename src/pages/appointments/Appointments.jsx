@@ -6,6 +6,8 @@ import {
   Plus,
   ChevronRight,
   ChevronLeft,
+  Activity,
+  Users,
 } from "lucide-react";
 import StatCard from "../../components/StatCard";
 import AddAppointmentModal from "./component/AddAppointmentModal";
@@ -28,6 +30,12 @@ const Appointments = () => {
   const [toDate, setToDate] = useState("");
   const today = new Date().toISOString().split("T")[0];
   const [selectedFilter, setSelectedFilter] = useState("Daily");
+  const [appointmentFilter, setAppointmentFilter] = useState("Today");
+  const [statsData, setStatsData] = useState({
+    scheduled: 0,
+    completed: 0,
+    cancelled: 0,
+  });
 
   const role = user?.role?.toLowerCase();
 
@@ -165,6 +173,28 @@ const Appointments = () => {
     return slots;
   }, []);
 
+  const fetchStatsData = async (period = "today") => {
+    try {
+      const { data } = await axiosInstance.get("/opd/visits/stats", {
+        params: { period },
+      });
+
+      if (data.success) {
+        setStatsData({
+          scheduled: data.data.counts.scheduled,
+          completed: data.data.counts.completed,
+          cancelled: data.data.counts.cancelled,
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchStatsData(appointmentFilter);
+  }, [appointmentFilter]);
+
   const PageLoader = () => {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/70 backdrop-blur-sm">
@@ -249,21 +279,36 @@ const Appointments = () => {
 
       {/* STATS */}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-4 gap-4">
         <StatCard
           title="Appointments"
-          value={stats.today}
-          icon={<Calendar />}
-          filters={["Daily", "Weekly", "Monthly"]}
-          selectedFilter={selectedFilter}
-          onFilterChange={setSelectedFilter}
+          value={
+            statsData.scheduled + statsData.completed + statsData.cancelled
+          }
+          icon={<Calendar size={24} className="text-blue-500" />}
+          filters={["Today", "Week", "Month"]}
+          selectedFilter={appointmentFilter}
+          onFilterChange={(period) =>
+            setAppointmentFilter(period.toLowerCase())
+          }
         />
-        <StatCard title="Scheduled" value={stats.scheduled} icon={<Clock />} />
-        <StatCard title="Completed" value={stats.completed} icon={<User />} />
+
+        <StatCard
+          title="Scheduled"
+          value={stats.scheduled}
+          icon={<Clock size={24} className="text-orange-500" />}
+        />
+
+        <StatCard
+          title="Completed"
+          value={stats.completed}
+          icon={<Activity size={24} className="text-green-500" />}
+        />
+
         <StatCard
           title="Cancelled"
           value={stats.cancelled}
-          icon={<Calendar />}
+          icon={<Users size={24} className="text-red-500" />}
         />
       </div>
 
