@@ -99,7 +99,7 @@ const DocAppointmentDetails = () => {
     try {
       const { data } = await axiosInstance.put(
         `/opd/visits/update/${aptId}`,
-        payload
+        payload,
       );
 
       if (data?.success) {
@@ -122,7 +122,7 @@ const DocAppointmentDetails = () => {
         chief_complaint: reason,
         notes: doctorNotes,
       },
-      "Details Updated Successfully!"
+      "Details Updated Successfully!",
     );
   };
 
@@ -130,8 +130,25 @@ const DocAppointmentDetails = () => {
     updateAppointment({ status: "ongoing" }, "Appointment Started!");
   };
 
-  const handleConfirmComplete = () => {
-    updateAppointment({ status: "completed" }, "Appointment Completed!");
+  const handleConfirmComplete = async () => {
+    // updateAppointment({ status: "completed" }, "Appointment Completed!");
+
+    const payload = {
+      payment_mode: "cash",
+    };
+    try {
+      const { data } = await axiosInstance.patch(
+        `/opd/visits/complete/${aptId}`,
+        payload,
+      );
+      console.log(data);
+      fetchAppointment();
+      setReason("");
+      setDoctorNotes("");
+      setIsModalOpen(false);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleToggle = () => {
@@ -176,8 +193,7 @@ const DocAppointmentDetails = () => {
           </h2>
 
           <h2>
-            Status:{" "}
-            <span className="font-normal">{appointment?.status}</span>
+            Status: <span className="font-normal">{appointment?.status}</span>
           </h2>
         </div>
 
@@ -197,9 +213,7 @@ const DocAppointmentDetails = () => {
             View Medical History
           </button>
 
-          <h2 className="text-sm text-[#495057]">
-            Available For 365 days
-          </h2>
+          <h2 className="text-sm text-[#495057]">Available For 365 days</h2>
         </div>
 
         <hr />
@@ -234,9 +248,7 @@ const DocAppointmentDetails = () => {
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   className={`w-full rounded-md p-2 text-sm outline-none ${
-                    !isEditing
-                      ? "cursor-not-allowed bg-[#E1E1E1]"
-                      : "bg-white"
+                    !isEditing ? "cursor-not-allowed bg-[#E1E1E1]" : "bg-white"
                   }`}
                   placeholder={appointment?.chief_complaint}
                 />

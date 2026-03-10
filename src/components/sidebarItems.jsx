@@ -34,6 +34,12 @@ export const sidebarItems = [
         icon: Users,
         permission: { module: "opd", action: "view" },
       },
+      {
+        label: "Token Queue",
+        path: "/opd/tokenQueue",
+        icon: Users,
+        permission: { module: "departments", action: "view" },
+      },
     ],
   },
   {

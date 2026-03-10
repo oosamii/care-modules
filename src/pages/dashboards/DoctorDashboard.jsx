@@ -6,6 +6,8 @@ import {
   Users,
   AlertCircle,
   Info,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 import StatCard from "../../components/StatCard";
@@ -17,7 +19,9 @@ import toast from "react-hot-toast";
 const DoctorDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const limit = 5;
   const [appointmentFilter, setAppointmentFilter] = useState("Today");
   const [patientFilter, setPatientFilter] = useState("Today");
 
@@ -30,79 +34,47 @@ const DoctorDashboard = () => {
 
   const today = new Date().toISOString().split("T")[0];
 
-  const getDateRange = (filter) => {
-    const now = new Date();
-    let from = new Date();
-    let to = new Date();
-
-    if (filter === "Today") {
-      from = now;
-      to = new Date(now);
-    }
-
-    if (filter === "Week") {
-      const day = now.getDay();
-      from.setDate(now.getDate() - day);
-      to = new Date(from);
-      to.setDate(from.getDate() + 6);
-    }
-
-    if (filter === "Month") {
-      from = new Date(now.getFullYear(), now.getMonth(), 1);
-      to = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    }
-
-    to.setDate(to.getDate() + 1);
-
-    return {
-      from_date: from.toISOString().split("T")[0],
-      to_date: to.toISOString().split("T")[0],
-    };
-  };
-
-  const fetchAppointments = async () => {
+  const fetchQueue = async () => {
     try {
-      const range = getDateRange(appointmentFilter);
-
-      const res = await axiosInstance.get("/opd/visits/findAll", {
+      const res = await axiosInstance.get("/opd/queue/list", {
         params: {
-          page: 1,
-          limit: 50,
-          doctor_id: user?.id,
-          ...range,
+          queue_type: "doctor",
+          queue_ref_id: user?.id,
+          queue_date: today,
+          page,
+          limit,
         },
       });
 
-      const visits = res?.data?.data?.data || [];
-      const mapped = visits.map((visit) => {
-        const dateObj = new Date(visit.visit_date);
+      const responseData = res?.data?.data || {};
+      const queueData = responseData?.data || [];
 
-        const dob = new Date(visit?.patient?.dob);
+      setTotalPages(responseData?.pages || 1);
+
+      const mapped = queueData.map((q) => {
+        const patient = q?.patient;
+
+        const dob = new Date(patient?.dob);
         const age = new Date().getFullYear() - dob.getFullYear();
 
         return {
-          id: visit.id,
-          time: dateObj.toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-          date: dateObj.toISOString().split("T")[0],
-
-          patient: `${visit?.patient?.first_name} ${visit?.patient?.last_name}`,
-          phone: visit?.patient?.phone,
-
-          age: age,
-          gender: visit?.patient?.gender,
-
-          status: visit.status,
+          id: q?.visit_id,
+          token: q?.token_code,
+          date: q?.queue_date,
+          patient: `${patient?.first_name} ${patient?.last_name}`,
+          phone: patient?.phone,
+          age,
+          gender: patient?.gender,
+          status: q?.status,
         };
       });
-      setAppointments(mapped);
-      setAppointmentCount(visits.length);
 
-      const todayVisits = mapped.filter((a) => a.date === today);
-    } catch {
-      toast.error("Failed to load appointments");
+      setQueue(queueData);
+      setAppointments(mapped);
+      setAppointmentCount(responseData?.total || 0);
+    } catch (err) {
+      console.log(err);
+      toast.error("Failed to load queue");
     }
   };
 
@@ -140,8 +112,8 @@ const DoctorDashboard = () => {
   useEffect(() => {
     if (!user?.id) return;
 
-    fetchAppointments();
-  }, [appointmentFilter, user?.id]);
+    fetchQueue();
+  }, [user?.id, page]);
 
   useEffect(() => {
     fetchPatients();
@@ -214,41 +186,67 @@ const DoctorDashboard = () => {
           <table className="w-full text-xs">
             <thead className="text-left text-gray-500">
               <tr>
-                <th className="py-2">Time</th>
-                <th>Patient</th>
+                <th className="py-2">Token</th>
+                <th className="py-2">Patient</th>
+                <th>Phone</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
 
             <tbody>
-              {appointments
-                // .filter((a) => a.date === today)
-                .map((a) => (
-                  <tr key={a.id} className="border-t">
-                    <td className="py-3">{a.time}</td>
-                    <td>{a.patient}</td>
+              {appointments.map((a) => (
+                <tr key={a.id} className="border-t">
+                  <td className="py-3 font-medium">{a.token}</td>
 
-                    <td>
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs ${getStatusStyle(a.status)}`}
-                      >
-                        {a.status}
-                      </span>
-                    </td>
+                  <td>{a.patient}</td>
 
-                    <td>
-                      <button
-                        onClick={() => navigate(`/aptDetails/${a.id}`)}
-                        className="px-3 py-1 border rounded-md text-sm"
-                      >
-                        View
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                  <td>{a.phone}</td>
+
+                  <td>
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs ${getStatusStyle(
+                        a.status,
+                      )}`}
+                    >
+                      {a.status}
+                    </span>
+                  </td>
+
+                  <td>
+                    <button
+                      onClick={() => navigate(`/aptDetails/${a.id}`)}
+                      className="px-3 py-1 border rounded-md text-sm"
+                    >
+                      View
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
+
+          <div className="flex justify-end items-center mt-5 gap-4">
+            <button
+              className="border rounded-lg disabled:opacity-50"
+              disabled={page === 1}
+              onClick={() => setPage(page - 1)}
+            >
+              <ChevronLeft />
+            </button>
+
+            <span className="text-sm text-gray-500">
+              Page {page} of {totalPages}
+            </span>
+
+            <button
+              className="border rounded-lg disabled:opacity-50"
+              disabled={page === totalPages}
+              onClick={() => setPage(page + 1)}
+            >
+              <ChevronRight />
+            </button>
+          </div>
         </div>
 
         <div className="bg-white border rounded-xl p-5">

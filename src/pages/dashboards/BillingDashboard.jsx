@@ -17,9 +17,9 @@ const BillingDashboard = () => {
   const [bills, setBills] = useState([]);
 
   const [page, setPage] = useState(1);
-  const [limit] = useState(20);
+  const [limit] = useState(5);
 
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState("final");
   const [module, setModule] = useState("");
   const [dateFilter, setDateFilter] = useState("Today");
 
@@ -56,7 +56,7 @@ const BillingDashboard = () => {
 
   /* Reset Filters */
   const resetFilters = () => {
-    setStatus("");
+    setStatus("final");
     setModule("");
     setDateFilter("today");
     setPage(1);

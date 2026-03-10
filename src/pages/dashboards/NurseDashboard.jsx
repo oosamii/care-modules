@@ -7,24 +7,23 @@ import {
   Users,
   AlertCircle,
   Info,
-  HeartPulse
+  HeartPulse,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 import StatCard from "../../components/StatCard";
-import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../constants/axiosInstance";
 import { useAuth } from "../../utils/AuthContext";
 import toast from "react-hot-toast";
 
 const NurseDashboard = () => {
-  const navigate = useNavigate();
   const { user } = useAuth();
 
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [showAddVitalsModal, setShowAddVitalsModal] = useState(false);
 
   const [appointmentFilter, setAppointmentFilter] = useState("Today");
-  const [patientFilter, setPatientFilter] = useState("Today");
 
   const [appointments, setAppointments] = useState([]);
   const [queue, setQueue] = useState([]);
@@ -32,6 +31,10 @@ const NurseDashboard = () => {
   const [appointmentCount, setAppointmentCount] = useState(0);
   const [patientCount, setPatientCount] = useState(0);
   const [pendingLabs, setPendingLabs] = useState(0);
+
+  const [page, setPage] = useState(1);
+  const [limit] = useState(5);
+  const [totalPages, setTotalPages] = useState(1);
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -62,7 +65,6 @@ const NurseDashboard = () => {
       to = new Date(now.getFullYear(), now.getMonth() + 1, 0);
     }
 
-    // 🔹 Add one day to `to` to include full day
     to.setDate(to.getDate() + 1);
 
     return {
@@ -71,19 +73,21 @@ const NurseDashboard = () => {
     };
   };
 
-  // ---------------- FETCH APPOINTMENTS ----------------
   const fetchAppointments = async () => {
     try {
       const range = getDateRange(appointmentFilter);
+
       const res = await axiosInstance.get("/opd/visits/findAll", {
         params: {
-          page: 1,
-          limit: 50,
+          page,
+          limit,
           ...range,
         },
       });
 
       const visits = res?.data?.data?.data || [];
+      const total = res?.data?.data?.total || visits.length;
+
       const mapped = visits.map((visit) => {
         const dateObj = new Date(visit.visit_date);
         const dob = new Date(visit?.patient?.dob);
@@ -101,16 +105,18 @@ const NurseDashboard = () => {
           age,
           gender: visit?.patient?.gender,
           status: visit.status,
+          vitals: visit?.vitals || null,
         };
       });
 
       setAppointments(mapped);
-      setAppointmentCount(visits.length);
+      setAppointmentCount(total);
+      setTotalPages(Math.ceil(total / limit));
 
-      // Update queue for patients waiting today
       const todayQueue = mapped.filter(
-        (a) => a.date === today && a.status !== "completed",
+        (a) => a.date === today && a.status !== "completed"
       );
+
       setQueue(todayQueue);
     } catch (err) {
       console.error(err);
@@ -118,18 +124,16 @@ const NurseDashboard = () => {
     }
   };
 
-  // ---------------- FETCH PATIENTS ----------------
   const fetchPatients = async () => {
     try {
-      const range = getDateRange(patientFilter);
       const res = await axiosInstance.get("/patients/with-opd-visits", {
         params: {
           doctor_id: user?.id,
           page: 1,
           limit: 50,
-          ...range,
         },
       });
+
       setPatientCount(res?.data?.data?.length || 0);
     } catch (err) {
       console.error(err);
@@ -137,50 +141,37 @@ const NurseDashboard = () => {
     }
   };
 
-  // ---------------- FETCH LAB RESULTS ----------------
   const fetchLabResults = async () => {
-    try {
-      setPendingLabs(0);
-    } catch {
-      setPendingLabs(0);
-    }
+    setPendingLabs(0);
   };
 
-  // ---------------- EFFECTS ----------------
   useEffect(() => {
     if (!user?.id) return;
     fetchAppointments();
-  }, [appointmentFilter, user?.id]);
+  }, [appointmentFilter, page, user?.id]);
 
   useEffect(() => {
     fetchPatients();
     fetchLabResults();
-  }, [patientFilter]);
+  }, []);
 
-  // ---------------- FILTERED APPOINTMENTS ----------------
-  const filteredAppointments = appointments.filter((a) => {
-    if (appointmentFilter === "Today") return a.date === today;
-    if (appointmentFilter === "Week") {
-      const start = new Date();
-      start.setDate(start.getDate() - start.getDay());
-      const end = new Date(start);
-      end.setDate(start.getDate() + 6);
-      const aDate = new Date(a.date);
-      return aDate >= start && aDate <= end;
+  const getStatusStyle = (status) => {
+    switch (status?.toLowerCase()) {
+      case "completed":
+        return "bg-blue-100 text-blue-600";
+      case "pending":
+        return "bg-yellow-100 text-yellow-700";
+      case "ongoing":
+        return "bg-green-100 text-green-600";
+      case "cancelled":
+        return "bg-red-100 text-red-600";
+      default:
+        return "bg-gray-100 text-gray-600";
     }
-    if (appointmentFilter === "Month") {
-      const aDate = new Date(a.date);
-      return (
-        aDate.getMonth() === new Date().getMonth() &&
-        aDate.getFullYear() === new Date().getFullYear()
-      );
-    }
-    return true;
-  });
+  };
 
   return (
     <div className="space-y-6">
-      {/* HEADER */}
       <div>
         <h1 className="text-2xl font-semibold text-gray-800">
           Nurse Dashboard
@@ -190,7 +181,6 @@ const NurseDashboard = () => {
         </p>
       </div>
 
-      {/* STATS */}
       <div className="grid grid-cols-4 gap-4">
         <StatCard
           title="Appointments"
@@ -198,32 +188,35 @@ const NurseDashboard = () => {
           icon={<Calendar size={24} className="text-blue-500" />}
           filters={["Today", "Week", "Month"]}
           selectedFilter={appointmentFilter}
-          onFilterChange={setAppointmentFilter}
+          onFilterChange={(val) => {
+            setAppointmentFilter(val);
+            setPage(1);
+          }}
         />
+
         <StatCard
           title="Patient Queue"
           value={queue.length}
           icon={<Clock size={24} className="text-orange-500" />}
         />
+
         <StatCard
           title="Lab Results Pending"
           value={pendingLabs}
           icon={<Activity size={24} className="text-purple-500" />}
         />
+
         <StatCard
           title="Total Patients"
           value={patientCount}
           icon={<Users size={24} className="text-green-500" />}
-          // filters={["Today", "Week", "Month"]}
-          // selectedFilter={patientFilter}
-          // onFilterChange={setPatientFilter}
         />
       </div>
 
-      {/* APPOINTMENTS TABLE & ALERTS */}
       <div className="grid grid-cols-3 gap-6">
         <div className="col-span-2 bg-white border rounded-xl p-5">
           <h2 className="text-lg font-semibold mb-4">Appointments</h2>
+
           <table className="w-full text-xs">
             <thead className="text-left text-gray-500">
               <tr>
@@ -233,40 +226,71 @@ const NurseDashboard = () => {
                 <th>Actions</th>
               </tr>
             </thead>
+
             <tbody>
-              {filteredAppointments.map((a) => (
+              {appointments.map((a) => (
                 <tr key={a.id} className="border-t">
                   <td className="py-3">{a.time}</td>
+
                   <td>{a.patient}</td>
+
                   <td>
                     <span
-                      className={`px-3 py-1 rounded-full text-xs ${
-                        a.status === "completed"
-                          ? "bg-blue-100 text-blue-600"
-                          : "bg-orange-100 text-orange-600"
-                      }`}
+                      className={`px-3 py-1 rounded-full text-xs ${getStatusStyle(
+                        a.status
+                      )}`}
                     >
                       {a.status}
                     </span>
                   </td>
+
                   <td>
-                    <button
-                      onClick={() => handleAddVitals(a)}
-                      className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md flex items-center gap-1"
-                    >
-                      <HeartPulse size={14} />
-                      Add Vitals
-                    </button>
+                    {a.vitals ? (
+                      <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs">
+                        Vitals Added
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => handleAddVitals(a)}
+                        className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md flex items-center gap-1"
+                      >
+                        <HeartPulse size={14} />
+                        Add Vitals
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+
+          {/* PAGINATION */}
+          <div className="flex justify-end items-center mt-5 gap-4">
+            <button
+              className="border rounded-lg disabled:opacity-50"
+              disabled={page === 1}
+              onClick={() => setPage(page - 1)}
+            >
+              <ChevronLeft />
+            </button>
+
+            <span className="text-sm text-gray-500">
+              Page {page} of {totalPages}
+            </span>
+
+            <button
+              className="border rounded-lg disabled:opacity-50"
+              disabled={page === totalPages}
+              onClick={() => setPage(page + 1)}
+            >
+              <ChevronRight />
+            </button>
+          </div>
         </div>
 
-        {/* SYSTEM ALERTS */}
         <div className="bg-white border rounded-xl p-5">
           <h2 className="text-lg font-semibold mb-4">System Alerts</h2>
+
           <div className="space-y-4">
             {pendingLabs > 0 && (
               <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded">
@@ -297,14 +321,14 @@ const NurseDashboard = () => {
           </div>
         </div>
 
-         {showAddVitalsModal && (
-        <AddVitalsModal
-          isOpen={showAddVitalsModal}
-          onClose={() => setShowAddVitalsModal(false)}
-          apt={selectedPatient}
-          onUpdated={fetchAppointments}
-        />
-      )}
+        {showAddVitalsModal && (
+          <AddVitalsModal
+            isOpen={showAddVitalsModal}
+            onClose={() => setShowAddVitalsModal(false)}
+            apt={selectedPatient}
+            onUpdated={fetchAppointments}
+          />
+        )}
       </div>
     </div>
   );

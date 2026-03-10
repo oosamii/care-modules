@@ -18,12 +18,11 @@ const Billing = () => {
   const [bills, setBills] = useState([]);
   const [expandedRow, setExpandedRow] = useState(null);
   const [selectedBills, setSelectedBills] = useState([]);
-
   const [page, setPage] = useState(1);
-  const [limit] = useState(20);
+  const [limit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
 
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState("final");
   const [module, setModule] = useState("");
   const [search, setSearch] = useState("");
 
@@ -58,7 +57,9 @@ const Billing = () => {
     0,
   );
 
-  const pendingBills = bills.filter((bill) => bill.status === "pending").length;
+  const pendingBills = bills.filter(
+    (bill) => bill.status === "pending",
+  ).length;
 
   const toggleRow = (id) => {
     setExpandedRow(expandedRow === id ? null : id);
@@ -78,8 +79,30 @@ const Billing = () => {
     }
   };
 
-  const downloadBill = (bill) => {
-    console.log("Downloading bill:", bill.id);
+  const downloadBill = async (bill) => {
+    try {
+      const response = await axiosInstance.get(
+        `/billing/bills/${bill.id}/pdf`,
+        {
+          responseType: "blob",
+        },
+      );
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `${bill.invoice_number || "bill"}-${bill.id}.pdf`,
+      );
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      console.error("Failed to download bill", err);
+    }
   };
 
   const downloadSelected = () => {
@@ -87,7 +110,7 @@ const Billing = () => {
   };
 
   const resetFilters = () => {
-    setStatus("");
+    setStatus("final");
     setModule("");
     setSearch("");
     setPage(1);
@@ -140,8 +163,8 @@ const Billing = () => {
             <option value="">All Modules</option>
             <option value="opd">OPD</option>
             <option value="ipd">IPD</option>
-            <option value="lab">Lab</option>
-            <option value="pharmacy">Pharmacy</option>
+            {/* <option value="lab">Lab</option>
+            <option value="pharmacy">Pharmacy</option> */}
           </select>
 
           <div className="relative">
@@ -172,7 +195,7 @@ const Billing = () => {
       </div>
 
       {/* STATS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         <StatCard
           title="Total Revenue"
           value={`₹ ${totalRevenue.toFixed(2)}`}
@@ -191,13 +214,13 @@ const Billing = () => {
         <table className="w-full">
           <thead className="bg-gray-50 text-left text-sm text-gray-600">
             <tr>
-              <th className="p-4">
+              {/* <th className="p-4">
                 <input
                   type="checkbox"
                   checked={selectedBills.length === bills.length}
                   onChange={toggleSelectAll}
                 />
-              </th>
+              </th> */}
               <th className="p-4">Invoice</th>
               <th className="p-4">Patient ID</th>
               <th className="p-4">Total</th>
@@ -210,7 +233,7 @@ const Billing = () => {
           </thead>
 
           <tbody>
-            {bills.map((bill) => {
+            {bills?.map((bill) => {
               const outstanding =
                 Number(bill.total_amount) - Number(bill.paid_amount);
 
@@ -220,16 +243,16 @@ const Billing = () => {
                     className="border-t hover:bg-gray-50 text-xs cursor-pointer"
                     onClick={() => toggleRow(bill.id)}
                   >
-                    <td className="p-4" onClick={(e) => e.stopPropagation()}>
+                    {/* <td className="p-4" onClick={(e) => e.stopPropagation()}>
                       <input
                         type="checkbox"
                         checked={selectedBills.includes(bill.id)}
                         onChange={() => toggleSelect(bill.id)}
                       />
-                    </td>
+                    </td> */}
 
                     <td className="p-4 font-medium">
-                      {bill.invoice_number || "Draft"}
+                      {bill?.invoice_number || "Draft"}
                     </td>
 
                     <td className="p-4">{bill.patient_id}</td>
@@ -252,13 +275,15 @@ const Billing = () => {
                       {new Date(bill.issued_at).toLocaleDateString()}
                     </td>
 
-                    <td className="p-4" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        onClick={() => downloadBill(bill)}
-                        className="text-blue-600"
-                      >
-                        <Download size={16} />
-                      </button>
+                    <td className="p-4 text-center" onClick={(e) => e.stopPropagation()}>
+                      {bill.invoice_number ? (
+                        <button
+                          onClick={() => downloadBill(bill)}
+                          className="text-blue-600"
+                        >
+                          <Download size={16} />
+                        </button>
+                      ): " - "}
                     </td>
                   </tr>
 
@@ -297,7 +322,7 @@ const Billing = () => {
             disabled={page === 1}
             onClick={() => setPage(page - 1)}
           >
-             <ChevronLeft />
+            <ChevronLeft />
           </button>
 
           <span className="text-sm text-gray-500">

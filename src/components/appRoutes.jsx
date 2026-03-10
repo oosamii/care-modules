@@ -13,6 +13,7 @@ import Pricing from "../pages/pricing/Pricing";
 import DashboardRouter from "../pages/dashboards/DashboardRouter";
 import DocAppointmentDetails from "../pages/appointments/doctorAptFlow/DocAppointmentDetails";
 import OpdPatients from "../pages/patients/OpdPatients";
+import TokenQueue from "../pages/appointments/TokenQueue";
 
 export const appRoutes = [
   {
@@ -33,6 +34,11 @@ export const appRoutes = [
   {
     path: "/opd/appointments",
     element: <Appointments />,
+    permission: { module: "opd", action: "view" },
+  },
+  {
+    path: "/opd/tokenQueue",
+    element: <TokenQueue />,
     permission: { module: "opd", action: "view" },
   },
   {

@@ -425,7 +425,7 @@ const Appointments = () => {
 
             {/* Doctor Slot Summary */}
             <div className="bg-white border rounded-xl p-4">
-              <h3 className="font-semibold mb-3">Doctor Slot Summary</h3>
+              <h3 className="font-semibold mb-3">Doctors List</h3>
 
               <div className="space-y-3 text-sm">
                 {doctors.slice(0, 3).map((doc) => (
@@ -440,10 +440,10 @@ const Appointments = () => {
                       </p>
                     </div>
 
-                    <div className="text-right text-xs">
+                    {/* <div className="text-right text-xs">
                       <p className="text-green-600">Next Free</p>
                       <p>--</p>
-                    </div>
+                    </div> */}
                   </div>
                 ))}
               </div>

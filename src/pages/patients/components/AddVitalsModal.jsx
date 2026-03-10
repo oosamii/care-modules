@@ -115,7 +115,7 @@ const AddVitalsModal = ({ isOpen, onClose, apt, onUpdated }) => {
           </div>
 
           {/* Status */}
-          <div>
+          {/* <div>
             <label className="text-sm text-gray-600">Status</label>
             <select
               name="status"
@@ -126,7 +126,7 @@ const AddVitalsModal = ({ isOpen, onClose, apt, onUpdated }) => {
               <option value="ongoing">Ongoing</option>
               <option value="completed">Completed</option>
             </select>
-          </div>
+          </div> */}
 
           {/* BP */}
           <div>

@@ -4,8 +4,9 @@ import {
   Clock,
   Activity,
   Users,
-  AlertCircle,
   Info,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 import StatCard from "../../components/StatCard";
@@ -14,6 +15,11 @@ import axiosInstance from "../../constants/axiosInstance";
 const FrontDeskDashboard = () => {
   const [appointmentFilter, setAppointmentFilter] = useState("Today");
   const [appointments, setAppointments] = useState([]);
+
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
 
   /* ---------------- TODAY RANGE ---------------- */
 
@@ -32,7 +38,7 @@ const FrontDeskDashboard = () => {
     };
   };
 
-  /* ---------------- FETCH TODAY VISITS ---------------- */
+  /* ---------------- FETCH APPOINTMENTS ---------------- */
 
   const fetchTodayAppointments = async () => {
     try {
@@ -40,8 +46,8 @@ const FrontDeskDashboard = () => {
 
       const res = await axiosInstance.get("/opd/visits/findAll", {
         params: {
-          page: 1,
-          limit: 50,
+          page,
+          limit,
           from_date: from,
           to_date: to,
         },
@@ -49,6 +55,7 @@ const FrontDeskDashboard = () => {
 
       if (res.data.success) {
         const visits = res.data.data.data;
+        const totalCount = res.data.data.total || visits.length;
 
         const formatted = visits.map((visit) => {
           const dateObj = new Date(visit.visit_date);
@@ -68,6 +75,8 @@ const FrontDeskDashboard = () => {
         });
 
         setAppointments(formatted);
+        setTotal(totalCount);
+        setTotalPages(Math.ceil(totalCount / limit));
       }
     } catch (error) {
       console.error("Dashboard fetch error:", error);
@@ -76,30 +85,28 @@ const FrontDeskDashboard = () => {
 
   useEffect(() => {
     fetchTodayAppointments();
-  }, []);
+  }, [page]);
 
   /* ---------------- STATS ---------------- */
 
-  const todayDate = new Date().toISOString().split("T")[0];
-
   const stats = useMemo(() => {
     return {
-      today: appointments.length,
+      today: total,
       scheduled: appointments.filter((a) => a.status === "open").length,
       completed: appointments.filter((a) => a.status === "completed").length,
       cancelled: appointments.filter((a) => a.status === "cancelled").length,
     };
-  }, [appointments]);
+  }, [appointments, total]);
 
-  /* ---------------- UI ---------------- */
+  /* ---------------- STATUS COLOR ---------------- */
 
   const getStatusColor = (status) => {
-    if (status === "completed")
-      return "bg-blue-100 text-blue-600";
-    if (status === "cancelled")
-      return "bg-red-100 text-red-600";
+    if (status === "completed") return "bg-blue-100 text-blue-600";
+    if (status === "cancelled") return "bg-red-100 text-red-600";
     return "bg-orange-100 text-orange-600";
   };
+
+  /* ---------------- UI ---------------- */
 
   return (
     <div className="space-y-6">
@@ -115,14 +122,14 @@ const FrontDeskDashboard = () => {
 
       {/* STATS */}
       <div className="grid grid-cols-4 gap-4">
-       <StatCard
-  title="Appointments"
-  value={12} // static for now
-  icon={<Calendar size={24} className="text-blue-500" />}
-  filters={["Today", "Week", "Month"]}
-  selectedFilter={appointmentFilter}
-  onFilterChange={setAppointmentFilter}
-/>
+        <StatCard
+          title="Appointments"
+          value={stats.today}
+          icon={<Calendar size={24} className="text-blue-500" />}
+          filters={["Today", "Week", "Month"]}
+          selectedFilter={appointmentFilter}
+          onFilterChange={setAppointmentFilter}
+        />
 
         <StatCard
           title="Scheduled"
@@ -188,9 +195,32 @@ const FrontDeskDashboard = () => {
               )}
             </tbody>
           </table>
+
+          {/* PAGINATION */}
+          <div className="flex justify-end items-center mt-5 gap-4">
+            <button
+              className="border rounded-lg p-1 disabled:opacity-50"
+              disabled={page === 1}
+              onClick={() => setPage(page - 1)}
+            >
+              <ChevronLeft size={18} />
+            </button>
+
+            <span className="text-sm text-gray-500">
+              Page {page} of {totalPages}
+            </span>
+
+            <button
+              className="border rounded-lg p-1 disabled:opacity-50"
+              disabled={page === totalPages}
+              onClick={() => setPage(page + 1)}
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
         </div>
 
-        {/* ALERTS (UNCHANGED) */}
+        {/* ALERTS */}
         <div className="bg-white border rounded-xl p-5">
           <h2 className="text-lg font-semibold mb-4">
             System Alerts
