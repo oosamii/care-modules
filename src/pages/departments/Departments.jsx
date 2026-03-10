@@ -75,9 +75,9 @@ const Departments = () => {
           title="Total Departments"
           value={departments.length}
           icon={<Building2 size={24} className="text-blue-500"/>}
-          filters={filters}
-          selectedFilter={selectedFilter}
-          onFilterChange={setSelectedFilter}
+          // filters={filters}
+          // selectedFilter={selectedFilter}
+          // onFilterChange={setSelectedFilter}
         />
 
         <StatCard
@@ -86,7 +86,7 @@ const Departments = () => {
           icon={<Activity size={24} className="text-green-500"/>}
         />
 
-        <StatCard
+        {/* <StatCard
           title="Total Patients"
           value={totalPatients}
           icon={<Users size={24} className="text-red-500"/>}
@@ -96,7 +96,7 @@ const Departments = () => {
           title="Total Revenue"
           value={`₹${totalRevenue}`}
           icon={<IndianRupee size={24} className="text-gray-500"/>}
-        />
+        /> */}
       </div>
 
       {/* Charts */}
@@ -161,7 +161,7 @@ const Departments = () => {
 
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
-            <thead className="bg-gray-100 text-xs uppercase text-gray-600">
+            <thead className="bg-gray-100 text-xs uppercase text-gray-600 text-left">
               <tr>
                 <th className="px-4 py-3">Name</th>
                 <th className="px-4 py-3">Short Code</th>

@@ -114,7 +114,7 @@ const NurseDashboard = () => {
       setTotalPages(Math.ceil(total / limit));
 
       const todayQueue = mapped.filter(
-        (a) => a.date === today && a.status !== "completed"
+        (a) => a.date === today && a.status !== "completed",
       );
 
       setQueue(todayQueue);
@@ -200,7 +200,7 @@ const NurseDashboard = () => {
           icon={<Clock size={24} className="text-orange-500" />}
         />
 
-        <StatCard
+        {/* <StatCard
           title="Lab Results Pending"
           value={pendingLabs}
           icon={<Activity size={24} className="text-purple-500" />}
@@ -210,7 +210,7 @@ const NurseDashboard = () => {
           title="Total Patients"
           value={patientCount}
           icon={<Users size={24} className="text-green-500" />}
-        />
+        /> */}
       </div>
 
       <div className="grid grid-cols-3 gap-6">
@@ -237,7 +237,7 @@ const NurseDashboard = () => {
                   <td>
                     <span
                       className={`px-3 py-1 rounded-full text-xs ${getStatusStyle(
-                        a.status
+                        a.status,
                       )}`}
                     >
                       {a.status}

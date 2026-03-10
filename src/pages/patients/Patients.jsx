@@ -211,7 +211,7 @@ const Patients = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-3 mb-4 text-xs">
+      {/* <div className="flex gap-3 mb-4 text-xs">
         {["All", "Active", "Critical"].map((tab) => (
           <button
             key={tab}
@@ -225,7 +225,7 @@ const Patients = () => {
             {tab} Patients
           </button>
         ))}
-      </div>
+      </div> */}
 
       {/* Table Section */}
       <div className="bg-white rounded-xl shadow-sm border">

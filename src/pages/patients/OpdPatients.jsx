@@ -153,7 +153,7 @@ const OpdPatients = () => {
           </p>
         </div>
 
-        {permissions?.opd?.create && (
+        {/* {permissions?.opd?.create && (
           <button
             onClick={() => setShowAddPatientModal(true)}
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow"
@@ -161,7 +161,7 @@ const OpdPatients = () => {
             <Plus size={18} />
             Add Patient
           </button>
-        )}
+        )} */}
       </div>
 
       <AddPatientModal
@@ -171,7 +171,7 @@ const OpdPatients = () => {
       />
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard
           title="Total Patients"
           value={statsData[filter]}
@@ -195,7 +195,7 @@ const OpdPatients = () => {
           value="12"
           icon={<Plus className="text-blue-500" />}
         />
-      </div>
+      </div> */}
 
       {/* Tabs */}
       {/* <div className="flex gap-3 mb-4 text-xs">

@@ -163,20 +163,20 @@ const DoctorDashboard = () => {
           icon={<Clock size={24} className="text-orange-500" />}
         />
 
-        <StatCard
+        {/* <StatCard
           title="Lab Results Pending"
           value={pendingLabs}
           icon={<Activity size={24} className="text-purple-500" />}
-        />
+        /> */}
 
-        <StatCard
+        {/* <StatCard
           title="Total Patients"
           value={patientCount}
           icon={<Users size={24} className="text-green-500" />}
           // filters={["Today", "Week", "Month"]}
           // selectedFilter={patientFilter}
           // onFilterChange={setPatientFilter}
-        />
+        /> */}
       </div>
 
       <div className="grid grid-cols-3 gap-6">
