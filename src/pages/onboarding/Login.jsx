@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import toast from "react-hot-toast";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, Hospital } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { BASE_URL } from "../../constants";
@@ -29,7 +29,6 @@ const Login = () => {
     setErrors({ ...errors, [e.target.name]: "" });
   };
 
-  // 🔎 STEP 1 – Lookup Hospitals
   const handleLookup = async (e) => {
     e.preventDefault();
     toast.dismiss();
@@ -98,11 +97,9 @@ const Login = () => {
 
         toast.success("Login successful 🎉");
         navigate("/dashboard");
-      } else {
-        toast.error(data?.message);
       }
     } catch (err) {
-      toast.error(err.response?.data?.error || "Unable to login at the moment");
+      toast.error(err.response?.data?.error || "Unable to login");
     } finally {
       setLoading(false);
     }
@@ -111,54 +108,71 @@ const Login = () => {
   const convertPermissions = (permissionsArray = []) => {
     return permissionsArray.reduce((acc, perm) => {
       const [module, action] = perm.split(".");
-
       if (!acc[module]) acc[module] = {};
       acc[module][action] = true;
-
       return acc;
     }, {});
   };
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-primary">
-      <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-blue-700 to-blue-500 text-white relative overflow-hidden">
-        <div className="absolute top-8 left-10 flex items-center gap-3">
-          <div className="bg-white text-blue-600 p-2 rounded-lg font-bold text-lg">
-            🏥
-          </div>
-          <span className="text-xl font-semibold">Orbit Care</span>
+    <div className="min-h-screen flex bg-slate-100">
+      {/* LEFT SIDE */}
+      <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-blue-700 to-blue-500 text-white p-16 flex-col justify-between">
+        <div className="flex items-center gap-3 text-2xl font-semibold">
+          🏥 Orbit Care
         </div>
 
-        <div className="flex flex-col justify-center px-16 lg:px-20">
-          <h1 className="text-5xl font-bold mb-8">SuperAdmin Console</h1>
-          <ul className="space-y-4 text-lg list-disc list-inside">
-            <li>Manage hospitals (tenants)</li>
-            <li>Control modules & access</li>
-            <li>Monitor platform health & audit</li>
-          </ul>
+        <div>
+          <h1 className="text-5xl font-bold mb-6">
+            Healthcare Management Platform
+          </h1>
+
+          <p className="text-lg text-blue-100 leading-relaxed">
+            Secure access for doctors, nurses, front desk staff and billing
+            teams to manage patients, appointments and hospital workflows.
+          </p>
+        </div>
+
+        <div className="text-blue-200 text-sm">
+          © {new Date().getFullYear()} Orbit Care
         </div>
       </div>
 
-      <div className="flex w-full lg:w-1/2 justify-center items-center p-6">
-        <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
+      {/* RIGHT SIDE */}
+      <div className="flex flex-1 justify-center items-center p-6">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
           <h2 className="text-3xl font-bold text-center text-gray-800">
-            Welcome Back
+            Staff Login
           </h2>
 
+          <p className="text-center text-gray-500 text-sm mt-2">
+            Access your hospital workspace
+          </p>
+
+          {/* STEP 1 */}
           {step === 1 && (
-            <form onSubmit={handleLookup} className="mt-8 space-y-5">
+            <form onSubmit={handleLookup} className="mt-8 space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
+                <label className="text-sm font-medium text-gray-700">
+                  Work Email
                 </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                  placeholder="Enter your email"
-                />
+
+                <div className="relative mt-1">
+                  <Mail
+                    size={18}
+                    className="absolute left-3 top-3 text-gray-400"
+                  />
+
+                  <input
+                    type="email"
+                    name="email"
+                    value={form.email}
+                    onChange={handleChange}
+                    className="w-full border rounded-lg pl-10 pr-4 py-2 focus:ring-2 focus:ring-blue-400"
+                    placeholder="doctor@hospital.com"
+                  />
+                </div>
+
                 {errors.email && (
                   <p className="text-sm text-red-500 mt-1">{errors.email}</p>
                 )}
@@ -167,83 +181,116 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2.5 rounded-lg transition"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg font-medium"
               >
-                {loading ? "Checking..." : "Next"}
+                {loading ? "Checking hospitals..." : "Continue"}
               </button>
             </form>
           )}
 
           {step === 2 && (
-            <form onSubmit={handleLogin} className="mt-8 space-y-5">
+            <form onSubmit={handleLogin} className="mt-8 space-y-6">
+              {/* Hospital Selection */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="text-sm font-medium text-gray-700">
                   Select Hospital
                 </label>
-                <select
-                  name="hospital_identifier"
-                  value={form.hospital_identifier}
-                  onChange={handleChange}
-                  className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                >
-                  <option value="">-- Select --</option>
-                  {hospitals?.map((hospital) => (
-                    <option
-                      key={hospital.hospital_slug}
-                      value={hospital.hospital_slug}
-                    >
-                      {hospital.hospital_name}
-                    </option>
-                  ))}
-                </select>
+
+                <div className="relative mt-1">
+                  <Hospital
+                    size={18}
+                    className="absolute left-3 top-3 text-gray-400 pointer-events-none"
+                  />
+
+                  <select
+                    name="hospital_identifier"
+                    value={form.hospital_identifier}
+                    onChange={handleChange}
+                    className="w-full border rounded-lg pl-10 pr-4 py-2 focus:ring-2 focus:ring-blue-400 bg-white"
+                  >
+                    <option value="">Choose hospital</option>
+
+                    {hospitals.map((hospital) => (
+                      <option
+                        key={hospital.hospital_slug}
+                        value={hospital.hospital_slug}
+                      >
+                        {hospital.hospital_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
+              {/* Password */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="text-sm font-medium text-gray-700">
                   Password
                 </label>
-                <div className="relative">
+
+                <div className="relative mt-1">
+                  <Lock
+                    size={18}
+                    className="absolute left-3 top-3 text-gray-400"
+                  />
+
                   <input
                     type={showPassword ? "text" : "password"}
                     name="password"
                     value={form.password}
                     onChange={handleChange}
-                    className="w-full border rounded-lg px-4 py-2 pr-10 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                    className="w-full border rounded-lg pl-10 pr-10 py-2 focus:ring-2 focus:ring-blue-400"
                     placeholder="Enter password"
                   />
+
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-2.5 text-gray-500 hover:text-blue-600"
+                    className="absolute right-3 top-2.5 text-gray-500"
                   >
                     {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
                   </button>
                 </div>
               </div>
 
+              {/* Actions */}
               <div className="flex justify-between items-center">
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="text-sm text-gray-500 hover:underline"
+                  className="text-xs text-gray-400 hover:text-blue-600 transition"
                 >
                   Change Email
                 </button>
 
                 <button
+                  type="button"
+                  onClick={() =>
+                    navigate("/forgotPassword", {
+                      state: {
+                        email: form.email,
+                        hospital_identifier: form.hospital_identifier,
+                      },
+                    })
+                  }
+                  className="text-xs text-gray-400 hover:text-blue-600 transition"
+                >
+                  Forgot your password?
+                </button>
+              </div>
+
+              {/* Sign In */}
+              <div className="text-center">
+                <button
                   type="submit"
                   disabled={loading}
-                  className="bg-blue-500 hover:bg-blue-600 text-white py-2.5 px-6 rounded-lg transition"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-medium w-full"
                 >
                   {loading ? "Signing in..." : "Sign In"}
                 </button>
               </div>
             </form>
           )}
-
-          <p className="text-center text-sm text-gray-500 mt-6">
-            © {new Date().getFullYear()} Orbit Care
-          </p>
         </div>
       </div>
     </div>

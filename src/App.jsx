@@ -6,6 +6,9 @@ import ProtectedRoute from "./utils/ProtectedRoute";
 import DashboardLayout from "./components/DashboardLayout";
 import { appRoutes } from "./components/AppRoutes";
 import PermissionRoute from "./components/PermissionRoute";
+import ForgotPassword from "./pages/onboarding/ForgotPassword";
+import ResetPassword from "./pages/onboarding/ResetPassword";
+import ResetComplete from "./pages/onboarding/ResetComplete";
 
 function App() {
   return (
@@ -14,6 +17,9 @@ function App() {
 
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/forgotPassword" element={<ForgotPassword />} />
+        <Route path="/verifyPassword" element={<ResetPassword />} />
+        <Route path="/reset-complete" element={<ResetComplete />} />
 
         <Route
           path="/"
