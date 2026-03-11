@@ -30,7 +30,7 @@ const Appointments = () => {
   const [toDate, setToDate] = useState("");
   const today = new Date().toISOString().split("T")[0];
   const [selectedFilter, setSelectedFilter] = useState("Daily");
-  const [appointmentFilter, setAppointmentFilter] = useState("Today");
+  const [appointmentFilter, setAppointmentFilter] = useState("today");
   const [statsData, setStatsData] = useState({
     scheduled: 0,
     completed: 0,
@@ -286,7 +286,7 @@ const Appointments = () => {
             statsData.scheduled + statsData.completed + statsData.cancelled
           }
           icon={<Calendar size={24} className="text-blue-500" />}
-          filters={["Today", "Week", "Month"]}
+          filters={["today", "week", "month", "quarter"]}
           selectedFilter={appointmentFilter}
           onFilterChange={(period) =>
             setAppointmentFilter(period.toLowerCase())

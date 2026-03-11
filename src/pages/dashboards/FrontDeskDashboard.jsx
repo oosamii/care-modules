@@ -13,7 +13,7 @@ import StatCard from "../../components/StatCard";
 import axiosInstance from "../../constants/axiosInstance";
 
 const FrontDeskDashboard = () => {
-  const [appointmentFilter, setAppointmentFilter] = useState("Today");
+  const [appointmentFilter, setAppointmentFilter] = useState("today");
   const [appointments, setAppointments] = useState([]);
   const [statsData, setStatsData] = useState({
     scheduled: 0,
@@ -150,7 +150,7 @@ const FrontDeskDashboard = () => {
             statsData.scheduled + statsData.completed + statsData.cancelled
           }
           icon={<Calendar size={24} className="text-blue-500" />}
-          filters={["Today", "Week", "Month"]}
+          filters={["today", "week", "month"]}
           selectedFilter={appointmentFilter}
           onFilterChange={(period) =>
             setAppointmentFilter(period.toLowerCase())

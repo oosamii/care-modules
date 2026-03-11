@@ -10,7 +10,6 @@ const StatCard = ({
 }) => {
   return (
     <div className="bg-white rounded-xl shadow-sm border p-5 flex flex-col justify-between">
-      
       {/* Top Section */}
       <div className="flex justify-between items-start">
         <div>
@@ -21,11 +20,10 @@ const StatCard = ({
         <div className="text-2xl">{icon}</div>
       </div>
 
-      {/* Subtle Inline Filters */}
       {filters.length > 0 && (
         <div className="flex justify-end gap-2 mt-3">
           {filters.map((filter) => {
-            const letter = filter.charAt(0);
+            const letter = filter.charAt(0).toUpperCase();
 
             return (
               <button

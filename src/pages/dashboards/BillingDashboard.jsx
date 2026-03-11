@@ -163,12 +163,6 @@ const BillingDashboard = () => {
           title="Total Bills"
           value={stats.totalBills}
           icon={<CreditCard size={24} className="text-blue-500" />}
-          // filters={["Today", "Week", "Month", "Quarter"]}
-          // selectedFilter={dateFilter}
-          // onFilterChange={(filter) => {
-          //   setPage(1);
-          //   setDateFilter(filter);
-          // }}
         />
 
         <StatCard

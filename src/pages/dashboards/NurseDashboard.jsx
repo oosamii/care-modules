@@ -1,5 +1,5 @@
 import AddVitalsModal from "../patients/components/AddVitalsModal";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Calendar,
   Clock,
@@ -23,8 +23,6 @@ const NurseDashboard = () => {
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [showAddVitalsModal, setShowAddVitalsModal] = useState(false);
 
-  const [appointmentFilter, setAppointmentFilter] = useState("Today");
-
   const [appointments, setAppointments] = useState([]);
   const [queue, setQueue] = useState([]);
 
@@ -35,6 +33,13 @@ const NurseDashboard = () => {
   const [page, setPage] = useState(1);
   const [limit] = useState(5);
   const [totalPages, setTotalPages] = useState(1);
+
+  const [appointmentFilter, setAppointmentFilter] = useState("today");
+  const [statsData, setStatsData] = useState({
+    scheduled: 0,
+    completed: 0,
+    cancelled: 0,
+  });
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -170,6 +175,37 @@ const NurseDashboard = () => {
     }
   };
 
+   const stats = useMemo(() => {
+      return {
+        today: appointments.filter((a) => a.date === today).length,
+        scheduled: appointments.filter((a) => a.status === "open").length,
+        completed: appointments.filter((a) => a.status === "completed").length,
+        cancelled: appointments.filter((a) => a.status === "cancelled").length,
+      };
+    }, [appointments, today]);
+
+  const fetchStatsData = async (period = "today") => {
+    try {
+      const { data } = await axiosInstance.get("/opd/visits/stats", {
+        params: { period },
+      });
+
+      if (data.success) {
+        setStatsData({
+          scheduled: data.data.counts.scheduled,
+          completed: data.data.counts.completed,
+          cancelled: data.data.counts.cancelled,
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchStatsData(appointmentFilter);
+  }, [appointmentFilter]);
+
   return (
     <div className="space-y-6">
       <div>
@@ -184,33 +220,34 @@ const NurseDashboard = () => {
       <div className="grid grid-cols-4 gap-4">
         <StatCard
           title="Appointments"
-          value={appointmentCount}
+          value={
+            statsData.scheduled + statsData.completed + statsData.cancelled
+          }
           icon={<Calendar size={24} className="text-blue-500" />}
-          filters={["Today", "Week", "Month"]}
+          filters={["today", "week", "month", "quarter"]}
           selectedFilter={appointmentFilter}
-          onFilterChange={(val) => {
-            setAppointmentFilter(val);
-            setPage(1);
-          }}
+          onFilterChange={(period) =>
+            setAppointmentFilter(period.toLowerCase())
+          }
         />
 
         <StatCard
-          title="Patient Queue"
-          value={queue.length}
+          title="Scheduled"
+          value={stats.scheduled}
           icon={<Clock size={24} className="text-orange-500" />}
         />
 
-        {/* <StatCard
-          title="Lab Results Pending"
-          value={pendingLabs}
-          icon={<Activity size={24} className="text-purple-500" />}
+        <StatCard
+          title="Completed"
+          value={stats.completed}
+          icon={<Activity size={24} className="text-green-500" />}
         />
 
         <StatCard
-          title="Total Patients"
-          value={patientCount}
-          icon={<Users size={24} className="text-green-500" />}
-        /> */}
+          title="Cancelled"
+          value={stats.cancelled}
+          icon={<Users size={24} className="text-red-500" />}
+        />
       </div>
 
       <div className="grid grid-cols-3 gap-6">

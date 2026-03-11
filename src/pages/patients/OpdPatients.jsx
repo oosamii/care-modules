@@ -17,13 +17,6 @@ import { useAuth } from "../../utils/AuthContext";
 import ViewPatientModal from "./components/ViewPatientModal";
 import BillModal from "./components/BillModal";
 
-const statsData = {
-  Daily: 2,
-  Weekly: 8,
-  Monthly: 12,
-  Quarterly: 36,
-};
-
 const OpdPatients = () => {
   const [showAddPatientModal, setShowAddPatientModal] = useState(false);
   const [showAddVitalsModal, setShowAddVitalModal] = useState(false);
@@ -39,7 +32,7 @@ const OpdPatients = () => {
   const [showBillsModal, setShowBillsModal] = useState(false);
   const [bills, setBills] = useState([]);
   const [billsLoading, setBillsLoading] = useState(false);
-  const [filter, setFilter] = useState("Today");
+  const [filter, setFilter] = useState("today");
   const [stats, setStats] = useState({
     total: 0,
     active: 0,
