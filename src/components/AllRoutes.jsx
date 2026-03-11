@@ -14,6 +14,10 @@ import DashboardRouter from "../pages/dashboards/DashboardRouter";
 import DocAppointmentDetails from "../pages/appointments/doctorAptFlow/DocAppointmentDetails";
 import OpdPatients from "../pages/patients/OpdPatients";
 import TokenQueue from "../pages/appointments/TokenQueue";
+import Refunds from "../pages/billing/Refunds";
+import InvoiceCreate from "../pages/billing/InvoiceCreate";
+import PendingDues from "../pages/billing/PendingDues";
+import BillingReports from "../pages/billing/BillingReports";
 
 export const AllRoutes = [
   {
@@ -64,6 +68,26 @@ export const AllRoutes = [
   {
     path: "/billing",
     element: <Billing />,
+    permission: { module: "billing", action: "view" },
+  },
+  {
+    path: "/createInvoice",
+    element: <InvoiceCreate />,
+    permission: { module: "billing", action: "view" },
+  },
+  {
+    path: "/refund",
+    element: <Refunds />,
+    permission: { module: "billing", action: "view" },
+  },
+  {
+    path: "/dues",
+    element: <PendingDues />,
+    permission: { module: "billing", action: "view" },
+  },
+   {
+    path: "/billingReports",
+    element: <BillingReports />,
     permission: { module: "billing", action: "view" },
   },
   {
