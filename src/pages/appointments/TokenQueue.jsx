@@ -134,7 +134,7 @@ const TokenQueue = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen p-4">
+    <div className="bg-gray-50 min-h-screen">
       <h1 className="text-2xl font-semibold mb-4">Token Queue</h1>
 
       {selectedToken && (

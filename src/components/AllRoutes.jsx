@@ -18,12 +18,25 @@ import Refunds from "../pages/billing/Refunds";
 import InvoiceCreate from "../pages/billing/InvoiceCreate";
 import PendingDues from "../pages/billing/PendingDues";
 import BillingReports from "../pages/billing/BillingReports";
+import OpdDashboard from "../pages/opd/OpdDashboard";
+import VitalsCapture from "../pages/opd/VitalsCapture";
+import OpdEncounter from "../pages/opd/OpdEncounter";
+import OpdOrders from "../pages/opd/OpdOrders";
+import Prescription from "../pages/opd/Prescription";
+import OpdDocuments from "../pages/opd/OpdDocuments";
+import OpdSummary from "../pages/opd/OpdSummary";
+import OPDReports from "../pages/opd/OPDReports";
 
 export const AllRoutes = [
   {
     path: "/dashboard",
     element: <DashboardRouter />,
     // permission: { module: "dashboard", action: "view" },
+  },
+  {
+    path: "/opdDashboard",
+    element: <OpdDashboard />,
+    permission: { module: "opd", action: "view" },
   },
   {
     path: "/patients",
@@ -43,6 +56,41 @@ export const AllRoutes = [
   {
     path: "/opd/tokenQueue",
     element: <TokenQueue />,
+    permission: { module: "opd", action: "view" },
+  },
+  {
+    path: "/opd/vital",
+    element: <VitalsCapture />,
+    permission: { module: "opd", action: "view" },
+  },
+  {
+    path: "/opd/encounter",
+    element: <OpdEncounter />,
+    permission: { module: "opd", action: "view" },
+  },
+  {
+    path: "/opd/order",
+    element: <OpdOrders />,
+    permission: { module: "opd", action: "view" },
+  },
+  {
+    path: "/prescription",
+    element: <Prescription />,
+    permission: { module: "opd", action: "view" },
+  },
+  {
+    path: "/opd/docs",
+    element: <OpdDocuments />,
+    permission: { module: "opd", action: "view" },
+  },
+  {
+    path: "/opd/summary",
+    element: <OpdSummary />,
+    permission: { module: "opd", action: "view" },
+  },
+  {
+    path: "/opd/reports",
+    element: <OPDReports />,
     permission: { module: "opd", action: "view" },
   },
   {
@@ -85,7 +133,7 @@ export const AllRoutes = [
     element: <PendingDues />,
     permission: { module: "billing", action: "view" },
   },
-   {
+  {
     path: "/billingReports",
     element: <BillingReports />,
     permission: { module: "billing", action: "view" },
@@ -122,4 +170,4 @@ export const AllRoutes = [
   },
 ];
 
-export default AllRoutes
+export default AllRoutes;

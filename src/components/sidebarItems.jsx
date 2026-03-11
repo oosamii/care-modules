@@ -10,42 +10,34 @@ import {
   CalendarDays,
   Settings,
   Undo2,
+  ArrowUp10,
   BookCopy,
+  SquareActivity,
+  FileUser,
+  Stethoscope,
+  Pill,
+  FileText
 } from "lucide-react";
 
 export const sidebarItems = [
+  // {
+  //   label: "Dashboard",
+  //   path: "/dashboard",
+  //   icon: LayoutDashboard,
+  // },
+
   {
     label: "Dashboard",
-    path: "/dashboard",
+    path: "/opdDashboard",
     icon: LayoutDashboard,
+    permission: { module: "opd", action: "view" },
   },
-
-  // {
-  //   label: "OPD",
-  //   icon: Stethoscope,
-  //   permission: { module: "opd", action: "view" },
-  //   children: [
-  //     {
-  //       label: "Appointments",
-  //       path: "/opd/appointments",
-  //       icon: CalendarDays,
-  //       permission: { module: "opd", action: "view" },
-  //     },
-  //     {
-  //       label: "OPD",
-  //       path: "/opd/patients",
-  //       icon: Users,
-  //       permission: { module: "opd", action: "view" },
-  //     },
-  //     {
-  //       label: "Token Queue",
-  //       path: "/opd/tokenQueue",
-  //       icon: Users,
-  //       permission: { module: "departments", action: "view" },
-  //     },
-  //   ],
-  // },
-  
+  {
+    label: "Patient Directory",
+    path: "/patients",
+    icon: Users,
+    permission: { module: "patients", action: "view" },
+  },
   {
     label: "Appointments",
     path: "/opd/appointments",
@@ -53,30 +45,71 @@ export const sidebarItems = [
     permission: { module: "opd", action: "view" },
   },
   {
-    label: "OPD",
-    path: "/opd/patients",
-    icon: Users,
+    label: "Token Queue",
+    path: "/opd/tokenQueue",
+    icon: ArrowUp10,
     permission: { module: "opd", action: "view" },
   },
   {
-    label: "Token Queue",
-    path: "/opd/tokenQueue",
-    icon: Users,
-    permission: { module: "departments", action: "view" },
+    label: "Vitals",
+    path: "/opd/vital",
+    icon: SquareActivity,
+    permission: { module: "opd", action: "view" },
   },
   {
-    label: "Patients",
-    path: "/patients",
-    icon: Users,
-    permission: { module: "patients", action: "view" },
+    label: "Encounter",
+    path: "/opd/encounter",
+    icon: Stethoscope,
+    permission: { module: "opd", action: "view" },
   },
 
+  // this views the patients who hv appointment in hospital ---- uncomment when needed
+
+  // {
+  //   label: "OPD Patients",
+  //   path: "/opd/patients",
+  //   icon: Users,
+  //   permission: { module: "opd", action: "view" },
+  // },
   {
-    label: "Departments",
-    path: "/departments",
-    icon: Building2,
-    permission: { module: "departments", action: "view" },
+    label: "Orders",
+    path: "/opd/order",
+    icon: FileUser,
+    permission: { module: "opd", action: "view" },
   },
+  {
+    label: "Prescription",
+    path: "/prescription",
+    icon: Pill,
+    permission: { module: "opd", action: "view" },
+  },
+  {
+    label: "Documents",
+    path: "/opd/docs",
+    icon: FileText ,
+    permission: { module: "opd", action: "view" },
+  },
+    {
+    label: "Visit Summary",
+    path: "/opd/summary",
+    icon: FileText ,
+    permission: { module: "opd", action: "view" },
+  },
+    {
+    label: "Reports",
+    path: "/opd/reports",
+    icon: FileText ,
+    permission: { module: "opd", action: "view" },
+  },
+
+  // this views the departments in hospital ---- uncomment when needed
+
+  // {
+  //   label: "Departments",
+  //   path: "/departments",
+  //   icon: Building2,
+  //   permission: { module: "departments", action: "view" },
+  // },
   {
     label: "Charge Entry",
     path: "/pricing",
@@ -86,7 +119,7 @@ export const sidebarItems = [
   {
     label: "Invoice Create",
     path: "/createInvoice",
-    icon: ScrollText ,
+    icon: ScrollText,
     permission: { module: "billing", action: "view" },
   },
   {
@@ -107,10 +140,10 @@ export const sidebarItems = [
     icon: ReceiptText,
     permission: { module: "billing", action: "view" },
   },
-   {
+  {
     label: "Reports",
     path: "/billingReports",
-    icon: BookCopy ,
+    icon: BookCopy,
     permission: { module: "billing", action: "view" },
   },
 
