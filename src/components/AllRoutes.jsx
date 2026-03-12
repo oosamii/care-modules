@@ -4,8 +4,6 @@ import EMR from "../pages/emr/EMR";
 import Pharmacy from "../pages/pharmacy/Pharmacy";
 import Lab from "../pages/lab/Lab";
 import Billing from "../pages/billing/Billing";
-import Reports from "../pages/reports/Reports";
-import Staff from "../pages/staff/Staff";
 import Settings from "../pages/usersettings/Settings";
 import OPD from "../pages/opd/OPD";
 import Departments from "../pages/departments/Departments";
@@ -26,6 +24,11 @@ import Prescription from "../pages/opd/Prescription";
 import OpdDocuments from "../pages/opd/OpdDocuments";
 import OpdSummary from "../pages/opd/OpdSummary";
 import OPDReports from "../pages/opd/OPDReports";
+import IPDDashboard from "../pages/ipd/IPDDashboard";
+import IpdAdmissions from "../pages/ipd/IpdAdmissions";
+import PackageVariance from "../pages/ipd/PackageVariance";
+import IpdRegister from "../pages/ipd/IpdRegister";
+import IpdReports from "../pages/ipd/IpdReports";
 
 export const AllRoutes = [
   {
@@ -37,6 +40,11 @@ export const AllRoutes = [
     path: "/opdDashboard",
     element: <OpdDashboard />,
     permission: { module: "opd", action: "view" },
+  },
+  {
+    path: "/ipdDashboard",
+    element: <IPDDashboard />,
+    permission: { module: "ward", action: "view" },
   },
   {
     path: "/patients",
@@ -103,8 +111,34 @@ export const AllRoutes = [
     element: <EMR />,
     permission: { module: "emr", action: "view" },
   },
+
+
+{
+    path: "/ipdAdmissions",
+    element: <IpdAdmissions />,
+    permission: { module: "ward", action: "view" },
+  },
   {
-    path: "/pharmacy",
+    path: "/packageVariance",
+    element: <PackageVariance />,
+    permission: { module: "ward", action: "view" },
+  },
+   {
+    path: "/ipdRegister",
+    element: <IpdRegister />,
+    permission: { module: "ward", action: "view" },
+  },
+   {
+    path: "/ipdReports",
+    element: <IpdReports />,
+    permission: { module: "ward", action: "view" },
+  },
+
+
+
+
+  {
+    path: "/pharmacyDashboard",
     element: <Pharmacy />,
     permission: { module: "pharmacy", action: "view" },
   },
@@ -137,16 +171,6 @@ export const AllRoutes = [
     path: "/billingReports",
     element: <BillingReports />,
     permission: { module: "billing", action: "view" },
-  },
-  {
-    path: "/reports",
-    element: <Reports />,
-    permission: { module: "reports", action: "view" },
-  },
-  {
-    path: "/staff",
-    element: <Staff />,
-    permission: { module: "staff", action: "view" },
   },
   {
     path: "/settings",

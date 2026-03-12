@@ -1,6 +1,6 @@
 import React from 'react'
 
-const Staff = () => {
+const IPDDashboard = () => {
   return (
     <div>
       
@@ -8,4 +8,4 @@ const Staff = () => {
   )
 }
 
-export default Staff
+export default IPDDashboard

@@ -16,7 +16,7 @@ import {
   FileUser,
   Stethoscope,
   Pill,
-  FileText
+  FileText,
 } from "lucide-react";
 
 export const sidebarItems = [
@@ -26,6 +26,8 @@ export const sidebarItems = [
   //   icon: LayoutDashboard,
   // },
 
+
+  // all the landing dashbaords added here 
   {
     label: "Dashboard",
     path: "/opdDashboard",
@@ -33,11 +35,28 @@ export const sidebarItems = [
     permission: { module: "opd", action: "view" },
   },
   {
+    label: "Dashboard",
+    path: "/ipdDashboard",
+    icon: LayoutDashboard,
+    permission: { module: "ward", action: "view" },
+  },
+    {
+    label: "Dashboard",
+    path: "/pharmacyDashboard",
+    icon: LayoutDashboard,
+    permission: { module: "pharmacy", action: "view" },
+  },
+
+  // this is global patients 
+  {
     label: "Patient Directory",
     path: "/patients",
     icon: Users,
     permission: { module: "patients", action: "view" },
   },
+
+
+  //opd pages starts from here
   {
     label: "Appointments",
     path: "/opd/appointments",
@@ -86,19 +105,19 @@ export const sidebarItems = [
   {
     label: "Documents",
     path: "/opd/docs",
-    icon: FileText ,
+    icon: FileText,
     permission: { module: "opd", action: "view" },
   },
-    {
+  {
     label: "Visit Summary",
     path: "/opd/summary",
-    icon: FileText ,
+    icon: FileText,
     permission: { module: "opd", action: "view" },
   },
-    {
+  {
     label: "Reports",
     path: "/opd/reports",
-    icon: FileText ,
+    icon: FileText,
     permission: { module: "opd", action: "view" },
   },
 
@@ -110,6 +129,12 @@ export const sidebarItems = [
   //   icon: Building2,
   //   permission: { module: "departments", action: "view" },
   // },
+
+
+
+
+
+  // billing and pricing starts here
   {
     label: "Charge Entry",
     path: "/pricing",
@@ -146,6 +171,36 @@ export const sidebarItems = [
     icon: BookCopy,
     permission: { module: "billing", action: "view" },
   },
+
+
+
+  // ipd starts here
+  {
+    label: "Admission Profile",
+    path: "/ipdAdmissions",
+    icon: BookCopy,
+    permission: { module: "ward", action: "view" },
+  },
+  {
+    label: "Package Variance",
+    path: "/packageVariance",
+    icon: BookCopy,
+    permission: { module: "ward", action: "view" },
+  },
+    {
+    label: "Register",
+    path: "/ipdRegister",
+    icon: BookCopy,
+    permission: { module: "ward", action: "view" },
+  },
+    {
+    label: "Reports",
+    path: "/ipdReports",
+    icon: BookCopy,
+    permission: { module: "ward", action: "view" },
+  },
+
+
 
   {
     label: "Lab",

@@ -1,33 +1,20 @@
-import DoctorDashboard from "./DoctorDashboard";
-import NurseDashboard from "./NurseDashboard";
-import FrontDeskDashboard from "./FrontDeskDashboard";
-import AdminDashboard from "./AdminDashboard";
 import { useAuth } from "../../utils/AuthContext";
 import { Navigate } from "react-router-dom";
-import BillingDashboard from "./BillingDashboard";
 
 const DashboardRouter = () => {
-  const { user } = useAuth();
+  const { permissions } = useAuth();
 
-  if (!user) return <Navigate to="/" replace />;
+  if (!permissions) return <Navigate to="/" replace />;
 
-  const role = user.role?.toLowerCase().trim();
+  if (permissions?.opd?.view) {
+    return <Navigate to="/opdDashboard" replace />;
+  }
 
-  if (!role) return <Navigate to="/" replace />;
+  if (permissions?.ward?.view) {
+    return <Navigate to="/ipdDashboard" replace />;
+  }
 
-  const dashboardMap = {
-    admin: <AdminDashboard />,
-    doctor: <DoctorDashboard />,
-    nurse: <NurseDashboard />,
-    front: <FrontDeskDashboard />,
-    billing: <BillingDashboard />,
-  };
-
-  const matchedRole = Object.keys(dashboardMap).find((key) =>
-    role.includes(key)
-  );
-
-  return matchedRole ? dashboardMap[matchedRole] : <Navigate to="/" replace />;
+  return <Navigate to="/" replace />;
 };
 
 export default DashboardRouter;

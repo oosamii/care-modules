@@ -96,7 +96,17 @@ const Login = () => {
         login(user, formattedPermissions);
 
         toast.success("Login successful 🎉");
-        navigate("/dashboard");
+
+        // Permission based routing
+        if (formattedPermissions?.opd?.view) {
+          navigate("/opdDashboard");
+        } else if (formattedPermissions?.ward?.view) {
+          navigate("/ipdDashboard");
+        } else if (formattedPermissions?.pharmacy?.view) {
+          navigate("/pharmacyDashboard");
+        } else {
+          navigate("/dashboard");
+        }
       }
     } catch (err) {
       toast.error(err.response?.data?.error || "Unable to login");

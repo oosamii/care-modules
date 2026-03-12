@@ -12,6 +12,8 @@ const Sidebar = () => {
   const { canAccess } = usePermission();
   const { user } = useAuth();
 
+  console.log(canAccess)
+
   return (
     <div
       className={`h-screen bg-white border-r flex flex-col transition-all duration-300 ${
