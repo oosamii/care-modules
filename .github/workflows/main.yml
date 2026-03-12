@@ -1,0 +1,27 @@
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Install sshpass
+      run: sudo apt-get update && sudo apt-get install -y sshpass
+
+    - name: Deploy using password SSH
+      run: |
+        sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no \
+        ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
+          cd ${{ secrets.WORK_DIR }} &&
+          echo '${{ secrets.SUDO_PASSWORD }}' | sudo -S chown -R ${{ secrets.SSH_USER }}:${{ secrets.SSH_USER }} . &&
+          git stash &&
+          git checkout ${{ secrets.MAIN_BRANCH }} &&
+          git pull &&
+          npm install &&
+          npm run build &&
+          echo '${{ secrets.SUDO_PASSWORD }}' | sudo -S systemctl restart naginx.service
+        "
