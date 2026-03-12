@@ -29,6 +29,7 @@ import IpdAdmissions from "../pages/ipd/IpdAdmissions";
 import PackageVariance from "../pages/ipd/PackageVariance";
 import IpdRegister from "../pages/ipd/IpdRegister";
 import IpdReports from "../pages/ipd/IpdReports";
+import AdServices from "../pages/ipd/AdServices";
 
 export const AllRoutes = [
   {
@@ -112,10 +113,14 @@ export const AllRoutes = [
     permission: { module: "emr", action: "view" },
   },
 
-
-{
+  {
     path: "/ipdAdmissions",
     element: <IpdAdmissions />,
+    permission: { module: "ward", action: "view" },
+  },
+  {
+    path: "/ipdAdServices",
+    element: <AdServices />,
     permission: { module: "ward", action: "view" },
   },
   {
@@ -123,19 +128,16 @@ export const AllRoutes = [
     element: <PackageVariance />,
     permission: { module: "ward", action: "view" },
   },
-   {
+  {
     path: "/ipdRegister",
     element: <IpdRegister />,
     permission: { module: "ward", action: "view" },
   },
-   {
+  {
     path: "/ipdReports",
     element: <IpdReports />,
     permission: { module: "ward", action: "view" },
   },
-
-
-
 
   {
     path: "/pharmacyDashboard",
