@@ -221,104 +221,108 @@ const TokenQueue = () => {
 
       {/* Queue Table */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-        <table className="w-full text-xs">
-          <thead className="bg-gray-100 text-gray-600">
-            <tr>
-              <th className="text-left p-3">TOKEN</th>
-              <th className="text-left p-3">PATIENT</th>
-              <th className="text-left p-3">VISIT TIME</th>
-              <th className="text-left p-3">DOCTOR</th>
-              <th className="text-left p-3">STATUS</th>
-              <th className="text-left p-3">ACTIONS</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
+        <div className="overflow-x-auto">
+          <table className="min-w-[900px] w-full text-xs">
+            <thead className="bg-gray-100 text-gray-600">
               <tr>
-                <td colSpan="6" className="text-center p-6">
-                  Loading queue...
-                </td>
+                <th className="text-left p-3">TOKEN</th>
+                <th className="text-left p-3">PATIENT</th>
+                <th className="text-left p-3">VISIT TIME</th>
+                <th className="text-left p-3">DOCTOR</th>
+                <th className="text-left p-3">STATUS</th>
+                <th className="text-left p-3">ACTIONS</th>
               </tr>
-            ) : tokens.length === 0 ? (
-              <tr>
-                <td colSpan="6" className="text-center p-6 text-gray-400">
-                  No tokens in queue
-                </td>
-              </tr>
-            ) : (
-              tokens.map((t) => (
-                <React.Fragment key={t.id}>
-                  <tr
-                    className="border-t text-xs cursor-pointer hover:bg-gray-50"
-                    onClick={() =>
-                      setSelectedToken(selectedToken?.id === t.id ? null : t)
-                    }
-                  >
-                    <td className="p-3 font-semibold">{t.token_code}</td>
-                    <td className="p-3">
-                      {t.patient?.first_name} {t.patient?.last_name}
-                      <span className="ml-2 text-gray-500 text-xs">
-                        ({t.patient?.gender})
-                      </span>
-                    </td>
-                    <td className="p-3">
-                      {t.visit
-                        ? new Date(t.visit.visit_date).toLocaleString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            day: "2-digit",
-                            month: "short",
-                          })
-                        : "-"}
-                    </td>
-                    <td className="p-3">{t.doctor_name}</td>
-                    <td className="p-3">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${statusStyles[t.status] || "bg-gray-100 text-gray-600"}`}
-                      >
-                        {t.status === "in_progress" ? "In Progress" : t.status}
-                      </span>
-                    </td>
-                    <td className="p-3 flex gap-4 text-blue-600">
-                      {t.status === "waiting" && (
-                        <button className="flex items-center gap-1 hover:underline">
-                          <Volume2 size={16} /> Call
-                        </button>
-                      )}
-                      {t.status === "completed" && (
-                        <button className="flex items-center gap-1 hover:underline">
-                          <FileText size={16} /> Prescription
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                  {selectedToken?.id === t.id && t.visit && (
-                    <tr className="bg-gray-50">
-                      <td colSpan="6" className="p-3 text-xs text-gray-700">
-                        <p>
-                          <b>Visit Date:</b> {formatDate(t.visit.visit_date)}
-                        </p>
-                        <p>
-                          <b>Service:</b> {t.visit.service_code}
-                        </p>
-                        {t.visit.chief_complaint && (
-                          <p>
-                            <b>Chief Complaint:</b> {t.visit.chief_complaint}
-                          </p>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan="6" className="text-center p-6">
+                    Loading queue...
+                  </td>
+                </tr>
+              ) : tokens.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="text-center p-6 text-gray-400">
+                    No tokens in queue
+                  </td>
+                </tr>
+              ) : (
+                tokens.map((t) => (
+                  <React.Fragment key={t.id}>
+                    <tr
+                      className="border-t text-xs cursor-pointer hover:bg-gray-50"
+                      onClick={() =>
+                        setSelectedToken(selectedToken?.id === t.id ? null : t)
+                      }
+                    >
+                      <td className="p-3 font-semibold">{t.token_code}</td>
+                      <td className="p-3">
+                        {t.patient?.first_name} {t.patient?.last_name}
+                        <span className="ml-2 text-gray-500 text-xs">
+                          ({t.patient?.gender})
+                        </span>
+                      </td>
+                      <td className="p-3">
+                        {t.visit
+                          ? new Date(t.visit.visit_date).toLocaleString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              day: "2-digit",
+                              month: "short",
+                            })
+                          : "-"}
+                      </td>
+                      <td className="p-3">{t.doctor_name}</td>
+                      <td className="p-3">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${statusStyles[t.status] || "bg-gray-100 text-gray-600"}`}
+                        >
+                          {t.status === "in_progress"
+                            ? "In Progress"
+                            : t.status}
+                        </span>
+                      </td>
+                      <td className="p-3 flex gap-4 text-blue-600">
+                        {t.status === "waiting" && (
+                          <button className="flex items-center gap-1 hover:underline">
+                            <Volume2 size={16} /> Call
+                          </button>
                         )}
-                        {t.visit.diagnosis && (
-                          <p>
-                            <b>Diagnosis:</b> {t.visit.diagnosis}
-                          </p>
+                        {t.status === "completed" && (
+                          <button className="flex items-center gap-1 hover:underline">
+                            <FileText size={16} /> Prescription
+                          </button>
                         )}
                       </td>
                     </tr>
-                  )}
-                </React.Fragment>
-              ))
-            )}
-          </tbody>
-        </table>
+                    {selectedToken?.id === t.id && t.visit && (
+                      <tr className="bg-gray-50">
+                        <td colSpan="6" className="p-3 text-xs text-gray-700">
+                          <p>
+                            <b>Visit Date:</b> {formatDate(t.visit.visit_date)}
+                          </p>
+                          <p>
+                            <b>Service:</b> {t.visit.service_code}
+                          </p>
+                          {t.visit.chief_complaint && (
+                            <p>
+                              <b>Chief Complaint:</b> {t.visit.chief_complaint}
+                            </p>
+                          )}
+                          {t.visit.diagnosis && (
+                            <p>
+                              <b>Diagnosis:</b> {t.visit.diagnosis}
+                            </p>
+                          )}
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
